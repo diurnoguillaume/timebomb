@@ -3,7 +3,7 @@
 A thrilling online multiplayer deduction game based on the board game Time Bomb.
 
 ## Play Now
-🎮 **[Play Time Bomb](https://diurnoguillaume.github.io/timebomb.github.io/)**
+🎮 **[Play Time Bomb](https://diurnoguillaume.github.io/timebomb/)**
 
 ## How to Play
 1. Create a room and share the 5-character code with friends
