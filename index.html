@@ -659,6 +659,11 @@
         setShowLog,
         cutWire,
       }) {
+        const [showMyCards, setShowMyCards] = useState(false);
+        const [defusingAnnounce, setDefusingAnnounce] = useState(0);
+        const [bombAnnounce, setBombAnnounce] = useState(0);
+        const [showAnnouncements, setShowAnnouncements] = useState(false);
+
         // ADD SAFETY CHECKS HERE
         if (!gameState || !gameState.players || !gameState.config) {
           return h(
@@ -694,6 +699,30 @@
         }
 
         const isMyTurn = currentPlayerObj.id === playerId;
+        const myPlayer = gameState.players.find(p => p.id === playerId);
+        
+        // Count my actual cards
+        const myActualCards = myPlayer && myPlayer.wires ? {
+          defusing: myPlayer.wires.filter(w => w.type === 'defusing' && !w.revealed).length,
+          bomb: myPlayer.wires.filter(w => w.type === 'bomb' && !w.revealed).length,
+          safe: myPlayer.wires.filter(w => w.type === 'safe' && !w.revealed).length
+        } : { defusing: 0, bomb: 0, safe: 0 };
+
+        const announceCards = async () => {
+          try {
+            const playerIndex = gameState.players.findIndex(p => p.id === playerId);
+            const announcements = gameState.announcements || {};
+            announcements[playerId] = {
+              name: myPlayer.name,
+              defusing: defusingAnnounce,
+              bomb: bombAnnounce,
+              round: gameState.round
+            };
+            await database.ref(`rooms/${gameState.code}/announcements`).set(announcements);
+          } catch (err) {
+            console.error('Failed to announce cards');
+          }
+        };
 
         return h(
           "div",
@@ -798,6 +827,157 @@
                     : "💣 Cut the Bomb or survive 4 rounds to win. Mislead others!"
                 )
               ),
+              
+              // MY CARDS SECTION
+              h(
+                "div",
+                { className: "mt-4" },
+                h(
+                  "button",
+                  {
+                    onClick: () => setShowMyCards(!showMyCards),
+                    className:
+                      "w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2",
+                  },
+                  showMyCards ? "👁️ Hide My Cards" : "👁️ View My Cards"
+                ),
+                showMyCards && h(
+                  "div",
+                  { className: "mt-3 bg-slate-900 rounded-lg p-4" },
+                  h("div", { className: "text-white font-bold mb-2" }, "My Actual Cards:"),
+                  h(
+                    "div",
+                    { className: "grid grid-cols-3 gap-3 text-center" },
+                    h(
+                      "div",
+                      { className: "bg-blue-800 rounded p-2" },
+                      h("div", { className: "text-2xl mb-1" }, "✂️"),
+                      h("div", { className: "text-sm text-blue-200" }, "Defusing"),
+                      h("div", { className: "text-xl font-bold text-white" }, myActualCards.defusing)
+                    ),
+                    h(
+                      "div",
+                      { className: "bg-red-800 rounded p-2" },
+                      h("div", { className: "text-2xl mb-1" }, "💣"),
+                      h("div", { className: "text-sm text-red-200" }, "Bomb"),
+                      h("div", { className: "text-xl font-bold text-white" }, myActualCards.bomb)
+                    ),
+                    h(
+                      "div",
+                      { className: "bg-slate-700 rounded p-2" },
+                      h("div", { className: "text-2xl mb-1" }, "✓"),
+                      h("div", { className: "text-sm text-slate-300" }, "Safe"),
+                      h("div", { className: "text-xl font-bold text-white" }, myActualCards.safe)
+                    )
+                  ),
+                  
+                  // ANNOUNCEMENT SECTION
+                  h("div", { className: "mt-4 border-t border-slate-700 pt-4" },
+                    h("div", { className: "text-white font-bold mb-3" }, "Announce Your Cards (You can lie!):"),
+                    h(
+                      "div",
+                      { className: "grid grid-cols-2 gap-4" },
+                      // Defusing announcer
+                      h(
+                        "div",
+                        { className: "bg-blue-900/30 rounded-lg p-3" },
+                        h("div", { className: "text-blue-300 text-sm mb-2 flex items-center gap-1" },
+                          h("span", null, "✂️ Defusing")
+                        ),
+                        h(
+                          "div",
+                          { className: "flex items-center justify-center gap-3" },
+                          h(
+                            "button",
+                            {
+                              onClick: () => setDefusingAnnounce(Math.max(0, defusingAnnounce - 1)),
+                              className: "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-lg font-bold text-xl"
+                            },
+                            "-"
+                          ),
+                          h("div", { className: "text-3xl font-bold text-white w-12 text-center" }, defusingAnnounce),
+                          h(
+                            "button",
+                            {
+                              onClick: () => setDefusingAnnounce(Math.min(5, defusingAnnounce + 1)),
+                              className: "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-lg font-bold text-xl"
+                            },
+                            "+"
+                          )
+                        )
+                      ),
+                      // Bomb announcer
+                      h(
+                        "div",
+                        { className: "bg-red-900/30 rounded-lg p-3" },
+                        h("div", { className: "text-red-300 text-sm mb-2 flex items-center gap-1" },
+                          h("span", null, "💣 Bomb")
+                        ),
+                        h(
+                          "div",
+                          { className: "flex items-center justify-center gap-3" },
+                          h(
+                            "button",
+                            {
+                              onClick: () => setBombAnnounce(Math.max(0, bombAnnounce - 1)),
+                              className: "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-lg font-bold text-xl"
+                            },
+                            "-"
+                          ),
+                          h("div", { className: "text-3xl font-bold text-white w-12 text-center" }, bombAnnounce),
+                          h(
+                            "button",
+                            {
+                              onClick: () => setBombAnnounce(Math.min(5, bombAnnounce + 1)),
+                              className: "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-lg font-bold text-xl"
+                            },
+                            "+"
+                          )
+                        )
+                      )
+                    ),
+                    h(
+                      "button",
+                      {
+                        onClick: announceCards,
+                        className: "w-full mt-3 bg-yellow-600 hover:bg-yellow-500 text-white py-2 rounded-lg font-bold transition-all"
+                      },
+                      "📢 Announce These Numbers"
+                    )
+                  )
+                )
+              ),
+
+              // ANNOUNCEMENTS SECTION
+              h(
+                "button",
+                {
+                  onClick: () => setShowAnnouncements(!showAnnouncements),
+                  className:
+                    "mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-all",
+                },
+                showAnnouncements ? "📢 Hide Announcements" : "📢 Show Player Announcements"
+              ),
+              showAnnouncements && gameState.announcements && h(
+                "div",
+                { className: "mt-3 bg-slate-900 rounded-lg p-3 max-h-40 overflow-y-auto" },
+                Object.values(gameState.announcements)
+                  .filter(a => a.round === gameState.round)
+                  .map((announcement, idx) =>
+                    h(
+                      "div",
+                      {
+                        key: idx,
+                        className: "text-slate-300 text-sm py-2 border-b border-slate-800 last:border-0"
+                      },
+                      h("strong", { className: "text-white" }, announcement.name + ": "),
+                      h("span", { className: "text-blue-400" }, `✂️ ${announcement.defusing}`),
+                      h("span", { className: "text-slate-500 mx-2" }, "•"),
+                      h("span", { className: "text-red-400" }, `💣 ${announcement.bomb}`)
+                    )
+                  )
+              ),
+              
               h(
                 "button",
                 {
@@ -821,184 +1001,184 @@
                     .map((entry, idx) =>
                       h(
                         "div",
-                    {
-                      key: idx,
-                      className:
-                        "text-slate-300 text-xs py-1 border-b border-slate-800 last:border-0",
-                    },
-                    entry.message
-                  )
+                        {
+                          key: idx,
+                          className:
+                            "text-slate-300 text-xs py-1 border-b border-slate-800 last:border-0",
+                        },
+                        entry.message
+                      )
+                    )
                 )
-            )
-        ),
-        h(
-          "div",
-          {
-            className:
-              "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
-          },
-         gameState.players.filter(player => player.wires && Array.isArray(player.wires)).map((player) => {
-            const isCurrentPlayer = currentPlayerObj.id === player.id;
-            const isMe = player.id === playerId;
-            return h(
+            ),
+            h(
               "div",
               {
-                key: player.id,
-                className: `bg-slate-800 rounded-xl p-4 border-2 transition-all ${
-                  isCurrentPlayer
-                    ? "border-yellow-400 shadow-lg shadow-yellow-400/20"
-                    : "border-slate-700"
-                } ${isMe ? "ring-2 ring-blue-500" : ""}`,
+                className:
+                  "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
               },
-              h(
-                "div",
-                { className: "flex justify-between items-center mb-3" },
-                h(
-                  "h3",
-                  { className: "text-white font-bold text-lg truncate" },
-                  player.name,
-                  isMe &&
+              gameState.players.filter(player => player.wires && Array.isArray(player.wires)).map((player) => {
+                const isCurrentPlayer = currentPlayerObj.id === player.id;
+                const isMe = player.id === playerId;
+                return h(
+                  "div",
+                  {
+                    key: player.id,
+                    className: `bg-slate-800 rounded-xl p-4 border-2 transition-all ${
+                      isCurrentPlayer
+                        ? "border-yellow-400 shadow-lg shadow-yellow-400/20"
+                        : "border-slate-700"
+                    } ${isMe ? "ring-2 ring-blue-500" : ""}`,
+                  },
+                  h(
+                    "div",
+                    { className: "flex justify-between items-center mb-3" },
+                    h(
+                      "h3",
+                      { className: "text-white font-bold text-lg truncate" },
+                      player.name,
+                      isMe &&
+                        h(
+                          "span",
+                          { className: "text-xs ml-2 text-blue-400" },
+                          "(You)"
+                        ),
+                      isCurrentPlayer &&
+                        h(Scissors, {
+                          className: "inline w-5 h-5 ml-2 text-yellow-400",
+                        })
+                    ),
                     h(
                       "span",
-                      { className: "text-xs ml-2 text-blue-400" },
-                      "(You)"
-                    ),
-                  isCurrentPlayer &&
-                    h(Scissors, {
-                      className: "inline w-5 h-5 ml-2 text-yellow-400",
-                    })
-                ),
-                h(
-                  "span",
-                  { className: "text-slate-400 text-sm" },
-                  `${player.wires.filter((w) => !w.revealed).length} wires`
-                )
-              ),
-              h(
-                "div",
-                { className: "grid grid-cols-5 gap-2" },
-                player.wires.map((wire) => {
-                  const canCut = isMyTurn && !isMe && !wire.revealed;
-                  const isSelected =
-                    selectedWire?.playerId === player.id &&
-                    selectedWire?.wireId === wire.id;
-                  return h(
-                    "button",
-                    {
-                      key: wire.id,
-                      onClick: () =>
-                        canCut &&
-                        setSelectedWire({
-                          playerId: player.id,
-                          wireId: wire.id,
-                        }),
-                      disabled: !canCut,
-                      className: `aspect-square rounded-lg transition-all text-xl ${
+                      { className: "text-slate-400 text-sm" },
+                      `${player.wires.filter((w) => !w.revealed).length} wires`
+                    )
+                  ),
+                  h(
+                    "div",
+                    { className: "grid grid-cols-5 gap-2" },
+                    player.wires.map((wire) => {
+                      const canCut = isMyTurn && !isMe && !wire.revealed;
+                      const isSelected =
+                        selectedWire?.playerId === player.id &&
+                        selectedWire?.wireId === wire.id;
+                      return h(
+                        "button",
+                        {
+                          key: wire.id,
+                          onClick: () =>
+                            canCut &&
+                            setSelectedWire({
+                              playerId: player.id,
+                              wireId: wire.id,
+                            }),
+                          disabled: !canCut,
+                          className: `aspect-square rounded-lg transition-all text-xl ${
+                            wire.revealed
+                              ? wire.type === "bomb"
+                                ? "bg-red-500 text-white"
+                                : wire.type === "defusing"
+                                ? "bg-blue-500 text-white"
+                                : "bg-slate-600 text-slate-400"
+                              : isSelected
+                              ? "bg-yellow-500 scale-110 shadow-lg cursor-pointer"
+                              : canCut
+                              ? "bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105"
+                              : "bg-slate-700 cursor-not-allowed opacity-50"
+                          }`,
+                        },
                         wire.revealed
                           ? wire.type === "bomb"
-                            ? "bg-red-500 text-white"
+                            ? "💣"
                             : wire.type === "defusing"
-                            ? "bg-blue-500 text-white"
-                            : "bg-slate-600 text-slate-400"
-                          : isSelected
-                          ? "bg-yellow-500 scale-110 shadow-lg cursor-pointer"
-                          : canCut
-                          ? "bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105"
-                          : "bg-slate-700 cursor-not-allowed opacity-50"
-                      }`,
-                    },
-                    wire.revealed
-                      ? wire.type === "bomb"
-                        ? "💣"
-                        : wire.type === "defusing"
-                        ? "✂️"
-                        : "✓"
-                      : "?"
-                  );
-                })
-              )
-            );
-          })
-        ),
-        selectedWire &&
-          isMyTurn &&
-          h(
-            "div",
-            {
-              className:
-                "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
-            },
+                            ? "✂️"
+                            : "✓"
+                          : "?"
+                      );
+                    })
+                  )
+                );
+              })
+            ),
+            selectedWire &&
+              isMyTurn &&
+              h(
+                "div",
+                {
+                  className:
+                    "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+                },
+                h(
+                  "button",
+                  {
+                    onClick: () =>
+                      cutWire(selectedWire.playerId, selectedWire.wireId),
+                    className:
+                      "bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-all hover:scale-105",
+                  },
+                  h(Scissors, { className: "inline w-6 h-6 mr-2" }),
+                  "Cut Wire"
+                )
+              ),
             h(
-              "button",
+              "div",
               {
-                onClick: () =>
-                  cutWire(selectedWire.playerId, selectedWire.wireId),
                 className:
-                  "bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-all hover:scale-105",
+                  "mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700 mb-20",
               },
-              h(Scissors, { className: "inline w-6 h-6 mr-2" }),
-              "Cut Wire"
-            )
-          ),
-        h(
-          "div",
-          {
-            className:
-              "mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700 mb-20",
-          },
-          h(
-            "h4",
-            { className: "text-white font-bold mb-3 flex items-center" },
-            h(AlertCircle, { className: "w-5 h-5 mr-2" }),
-            "Wire Types"
-          ),
-          h(
-            "div",
-            { className: "grid grid-cols-3 gap-4 text-sm" },
-            h(
-              "div",
-              { className: "flex items-center gap-2" },
+              h(
+                "h4",
+                { className: "text-white font-bold mb-3 flex items-center" },
+                h(AlertCircle, { className: "w-5 h-5 mr-2" }),
+                "Wire Types"
+              ),
               h(
                 "div",
-                {
-                  className:
-                    "w-8 h-8 bg-slate-600 rounded flex items-center justify-center text-slate-400",
-                },
-                "✓"
-              ),
-              h("span", { className: "text-slate-300" }, "Safe Wire")
-            ),
-            h(
-              "div",
-              { className: "flex items-center gap-2" },
-              h(
-                "div",
-                {
-                  className:
-                    "w-8 h-8 bg-blue-500 rounded flex items-center justify-center",
-                },
-                "✂️"
-              ),
-              h("span", { className: "text-slate-300" }, "Defusing Wire")
-            ),
-            h(
-              "div",
-              { className: "flex items-center gap-2" },
-              h(
-                "div",
-                {
-                  className:
-                    "w-8 h-8 bg-red-500 rounded flex items-center justify-center",
-                },
-                "💣"
-              ),
-              h("span", { className: "text-slate-300" }, "Bomb")
+                { className: "grid grid-cols-3 gap-4 text-sm" },
+                h(
+                  "div",
+                  { className: "flex items-center gap-2" },
+                  h(
+                    "div",
+                    {
+                      className:
+                        "w-8 h-8 bg-slate-600 rounded flex items-center justify-center text-slate-400",
+                    },
+                    "✓"
+                  ),
+                  h("span", { className: "text-slate-300" }, "Safe Wire")
+                ),
+                h(
+                  "div",
+                  { className: "flex items-center gap-2" },
+                  h(
+                    "div",
+                    {
+                      className:
+                        "w-8 h-8 bg-blue-500 rounded flex items-center justify-center",
+                    },
+                    "✂️"
+                  ),
+                  h("span", { className: "text-slate-300" }, "Defusing Wire")
+                ),
+                h(
+                  "div",
+                  { className: "flex items-center gap-2" },
+                  h(
+                    "div",
+                    {
+                      className:
+                        "w-8 h-8 bg-red-500 rounded flex items-center justify-center",
+                    },
+                    "💣"
+                  ),
+                  h("span", { className: "text-slate-300" }, "Bomb")
+                )
+              )
             )
           )
-        )
-      )
-    );
-  }
+        );
+      }
 
       // EndScreen Component
       function EndScreen({
