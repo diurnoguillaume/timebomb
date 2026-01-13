@@ -40,6 +40,148 @@
         width: 100%;
         min-height: 100vh;
       }
+
+      /* Round Transition Animation */
+      @keyframes fadeInScale {
+        0% {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes fadeOut {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      @keyframes slideUp {
+        0% {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .round-transition-enter {
+        animation: fadeInScale 0.4s ease-out forwards;
+      }
+      .round-transition-exit {
+        animation: fadeOut 0.3s ease-out forwards;
+      }
+      .round-number-animate {
+        animation: slideUp 0.5s ease-out 0.2s forwards;
+        opacity: 0;
+      }
+
+      /* Game Over Effects */
+      @keyframes explosionPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+      @keyframes screenShake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-5px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(5px);
+        }
+      }
+      @keyframes explosionFlash {
+        0% {
+          background-color: rgba(239, 68, 68, 0);
+        }
+        20% {
+          background-color: rgba(239, 68, 68, 0.5);
+        }
+        40% {
+          background-color: rgba(251, 146, 60, 0.4);
+        }
+        60% {
+          background-color: rgba(239, 68, 68, 0.3);
+        }
+        100% {
+          background-color: rgba(0, 0, 0, 0.8);
+        }
+      }
+      @keyframes victoryGlow {
+        0% {
+          background-color: rgba(59, 130, 246, 0);
+        }
+        50% {
+          background-color: rgba(59, 130, 246, 0.3);
+        }
+        100% {
+          background-color: rgba(0, 0, 0, 0.8);
+        }
+      }
+      @keyframes bombEmoji {
+        0% {
+          transform: scale(1) rotate(0deg);
+        }
+        25% {
+          transform: scale(1.5) rotate(-10deg);
+        }
+        50% {
+          transform: scale(2) rotate(10deg);
+        }
+        75% {
+          transform: scale(2.5) rotate(-5deg);
+        }
+        100% {
+          transform: scale(3) rotate(0deg);
+          opacity: 0;
+        }
+      }
+      @keyframes defuseSuccess {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.3);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .screen-shake {
+        animation: screenShake 0.5s ease-in-out;
+      }
+      .explosion-overlay {
+        animation: explosionFlash 1.5s ease-out forwards;
+      }
+      .victory-overlay {
+        animation: victoryGlow 1.5s ease-out forwards;
+      }
+      .bomb-explode {
+        animation: bombEmoji 1s ease-out forwards;
+      }
+      .defuse-success {
+        animation: defuseSuccess 0.5s ease-out;
+      }
     </style>
   </head>
   <body>
@@ -658,11 +800,51 @@
         showLog,
         setShowLog,
         cutWire,
+        showGameOverEffect,
+        gameOverType,
       }) {
         const [showMyCards, setShowMyCards] = useState(false);
         const [defusingAnnounce, setDefusingAnnounce] = useState(0);
         const [bombAnnounce, setBombAnnounce] = useState(0);
         const [showAnnouncements, setShowAnnouncements] = useState(false);
+
+        // Round transition state
+        const [showRoundTransition, setShowRoundTransition] = useState(false);
+        const [transitionRound, setTransitionRound] = useState(1);
+        const [transitionExiting, setTransitionExiting] = useState(false);
+        const [lastSeenRound, setLastSeenRound] = useState(null);
+
+        // Detect round changes and show transition
+        useEffect(() => {
+          if (
+            gameState &&
+            gameState.round &&
+            lastSeenRound !== null &&
+            gameState.round > lastSeenRound
+          ) {
+            setTransitionRound(gameState.round);
+            setShowRoundTransition(true);
+            setTransitionExiting(false);
+
+            // Start exit animation after 1.5s
+            const exitTimer = setTimeout(() => {
+              setTransitionExiting(true);
+            }, 1500);
+
+            // Hide overlay after exit animation
+            const hideTimer = setTimeout(() => {
+              setShowRoundTransition(false);
+            }, 1800);
+
+            return () => {
+              clearTimeout(exitTimer);
+              clearTimeout(hideTimer);
+            };
+          }
+          if (gameState && gameState.round) {
+            setLastSeenRound(gameState.round);
+          }
+        }, [gameState?.round, lastSeenRound]);
 
         // ADD SAFETY CHECKS HERE
         if (!gameState || !gameState.players || !gameState.config) {
@@ -699,41 +881,63 @@
         }
 
         const isMyTurn = currentPlayerObj.id === playerId;
-        const myPlayer = gameState.players.find(p => p.id === playerId);
+        const myPlayer = gameState.players.find((p) => p.id === playerId);
         const isHost = playerId === gameState.hostId;
-        
+
         // Count my actual cards
-        const myActualCards = myPlayer && myPlayer.wires ? {
-          defusing: myPlayer.wires.filter(w => w.type === 'defusing' && !w.revealed).length,
-          bomb: myPlayer.wires.filter(w => w.type === 'bomb' && !w.revealed).length,
-          safe: myPlayer.wires.filter(w => w.type === 'safe' && !w.revealed).length
-        } : { defusing: 0, bomb: 0, safe: 0 };
+        const myActualCards =
+          myPlayer && myPlayer.wires
+            ? {
+                defusing: myPlayer.wires.filter(
+                  (w) => w.type === "defusing" && !w.revealed
+                ).length,
+                bomb: myPlayer.wires.filter(
+                  (w) => w.type === "bomb" && !w.revealed
+                ).length,
+                safe: myPlayer.wires.filter(
+                  (w) => w.type === "safe" && !w.revealed
+                ).length,
+              }
+            : { defusing: 0, bomb: 0, safe: 0 };
 
         // Check if current player has already announced this round
-        const myAnnouncement = gameState.announcements && gameState.announcements[playerId];
-        const hasAnnouncedThisRound = myAnnouncement && myAnnouncement.round === gameState.round && myAnnouncement.locked;
-        
+        const myAnnouncement =
+          gameState.announcements && gameState.announcements[playerId];
+        const hasAnnouncedThisRound =
+          myAnnouncement &&
+          myAnnouncement.round === gameState.round &&
+          myAnnouncement.locked;
+
         // Check if all players have announced this round
-        const allPlayersAnnounced = gameState.players.every(p => {
-          const announcement = gameState.announcements && gameState.announcements[p.id];
-          return announcement && announcement.round === gameState.round && announcement.locked;
+        const allPlayersAnnounced = gameState.players.every((p) => {
+          const announcement =
+            gameState.announcements && gameState.announcements[p.id];
+          return (
+            announcement &&
+            announcement.round === gameState.round &&
+            announcement.locked
+          );
         });
 
         const announceCards = async () => {
           if (hasAnnouncedThisRound) return; // Prevent re-announcement
           try {
-            const playerIndex = gameState.players.findIndex(p => p.id === playerId);
+            const playerIndex = gameState.players.findIndex(
+              (p) => p.id === playerId
+            );
             const announcements = gameState.announcements || {};
             announcements[playerId] = {
               name: myPlayer.name,
               defusing: defusingAnnounce,
               bomb: bombAnnounce,
               round: gameState.round,
-              locked: true // Mark as locked after submission
+              locked: true, // Mark as locked after submission
             };
-            await database.ref(`rooms/${gameState.code}/announcements`).set(announcements);
+            await database
+              .ref(`rooms/${gameState.code}/announcements`)
+              .set(announcements);
           } catch (err) {
-            console.error('Failed to announce cards');
+            console.error("Failed to announce cards");
           }
         };
 
@@ -743,6 +947,57 @@
             className:
               "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-4",
           },
+
+          // ROUND TRANSITION OVERLAY
+          showRoundTransition &&
+            h(
+              "div",
+              {
+                className: `fixed inset-0 z-50 flex items-center justify-center bg-black/80 ${
+                  transitionExiting
+                    ? "round-transition-exit"
+                    : "round-transition-enter"
+                }`,
+              },
+              h(
+                "div",
+                { className: "text-center" },
+                h(
+                  "div",
+                  {
+                    className:
+                      "text-slate-400 text-xl mb-2 round-number-animate",
+                  },
+                  transitionRound > 1
+                    ? `Round ${transitionRound - 1} Complete`
+                    : "Game Starting"
+                ),
+                h(
+                  "div",
+                  {
+                    className:
+                      "text-6xl md:text-8xl font-bold text-white mb-4 round-number-animate",
+                  },
+                  `Round ${transitionRound}`
+                ),
+                h(
+                  "div",
+                  { className: "text-yellow-400 text-lg round-number-animate" },
+                  "Cards have been redistributed!"
+                ),
+                h(
+                  "div",
+                  {
+                    className:
+                      "mt-4 text-slate-500 text-sm round-number-animate",
+                  },
+                  `${5 - transitionRound} round${
+                    5 - transitionRound !== 1 ? "s" : ""
+                  } remaining`
+                )
+              )
+            ),
+
           h(
             "div",
             { className: "max-w-6xl mx-auto" },
@@ -840,36 +1095,61 @@
                     : "💣 Cut the Bomb or survive 4 rounds to win. Mislead others!"
                 )
               ),
-              
+
               // ANNOUNCEMENT STATUS BANNER
-              !allPlayersAnnounced && h(
-                "div",
-                { className: "mt-4 bg-yellow-900/50 border border-yellow-600 rounded-lg p-3" },
-                h("div", { className: "text-yellow-300 font-bold mb-2" }, "⚠️ Waiting for all players to announce before cutting wires"),
+              !allPlayersAnnounced &&
                 h(
                   "div",
-                  { className: "flex flex-wrap gap-2" },
-                  gameState.players.map(p => {
-                    const pAnnouncement = gameState.announcements && gameState.announcements[p.id];
-                    const pHasAnnounced = pAnnouncement && pAnnouncement.round === gameState.round && pAnnouncement.locked;
-                    return h(
-                      "span",
-                      {
-                        key: p.id,
-                        className: `px-2 py-1 rounded text-sm ${pHasAnnounced ? 'bg-green-700 text-green-200' : 'bg-slate-700 text-slate-400'}`
-                      },
-                      pHasAnnounced ? `✓ ${p.name}` : `⏳ ${p.name}`
-                    );
-                  })
-                )
-              ),
-              
-              allPlayersAnnounced && h(
-                "div",
-                { className: "mt-4 bg-green-900/50 border border-green-600 rounded-lg p-3" },
-                h("div", { className: "text-green-300 font-bold" }, "✓ All players have announced - Wire cutting enabled!")
-              ),
-              
+                  {
+                    className:
+                      "mt-4 bg-yellow-900/50 border border-yellow-600 rounded-lg p-3",
+                  },
+                  h(
+                    "div",
+                    { className: "text-yellow-300 font-bold mb-2" },
+                    "⚠️ Waiting for all players to announce before cutting wires"
+                  ),
+                  h(
+                    "div",
+                    { className: "flex flex-wrap gap-2" },
+                    gameState.players.map((p) => {
+                      const pAnnouncement =
+                        gameState.announcements &&
+                        gameState.announcements[p.id];
+                      const pHasAnnounced =
+                        pAnnouncement &&
+                        pAnnouncement.round === gameState.round &&
+                        pAnnouncement.locked;
+                      return h(
+                        "span",
+                        {
+                          key: p.id,
+                          className: `px-2 py-1 rounded text-sm ${
+                            pHasAnnounced
+                              ? "bg-green-700 text-green-200"
+                              : "bg-slate-700 text-slate-400"
+                          }`,
+                        },
+                        pHasAnnounced ? `✓ ${p.name}` : `⏳ ${p.name}`
+                      );
+                    })
+                  )
+                ),
+
+              allPlayersAnnounced &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "mt-4 bg-green-900/50 border border-green-600 rounded-lg p-3",
+                  },
+                  h(
+                    "div",
+                    { className: "text-green-300 font-bold" },
+                    "✓ All players have announced - Wire cutting enabled!"
+                  )
+                ),
+
               // MY CARDS SECTION
               h(
                 "div",
@@ -883,127 +1163,229 @@
                   },
                   showMyCards ? "👁️ Hide My Cards" : "👁️ View My Cards"
                 ),
-                showMyCards && h(
-                  "div",
-                  { className: "mt-3 bg-slate-900 rounded-lg p-4" },
-                  h("div", { className: "text-white font-bold mb-2" }, "My Actual Cards:"),
+                showMyCards &&
                   h(
                     "div",
-                    { className: "grid grid-cols-3 gap-3 text-center" },
+                    { className: "mt-3 bg-slate-900 rounded-lg p-4" },
                     h(
                       "div",
-                      { className: "bg-blue-800 rounded p-2" },
-                      h("div", { className: "text-2xl mb-1" }, "✂️"),
-                      h("div", { className: "text-sm text-blue-200" }, "Defusing"),
-                      h("div", { className: "text-xl font-bold text-white" }, myActualCards.defusing)
+                      { className: "text-white font-bold mb-2" },
+                      "My Actual Cards:"
                     ),
                     h(
                       "div",
-                      { className: "bg-red-800 rounded p-2" },
-                      h("div", { className: "text-2xl mb-1" }, "💣"),
-                      h("div", { className: "text-sm text-red-200" }, "Bomb"),
-                      h("div", { className: "text-xl font-bold text-white" }, myActualCards.bomb)
-                    ),
-                    h(
-                      "div",
-                      { className: "bg-slate-700 rounded p-2" },
-                      h("div", { className: "text-2xl mb-1" }, "✓"),
-                      h("div", { className: "text-sm text-slate-300" }, "Safe"),
-                      h("div", { className: "text-xl font-bold text-white" }, myActualCards.safe)
-                    )
-                  ),
-                  
-                  // ANNOUNCEMENT SECTION
-                  h("div", { className: "mt-4 border-t border-slate-700 pt-4" },
-                    hasAnnouncedThisRound 
-                      ? h(
+                      { className: "grid grid-cols-3 gap-3 text-center" },
+                      h(
+                        "div",
+                        { className: "bg-blue-800 rounded p-2" },
+                        h("div", { className: "text-2xl mb-1" }, "✂️"),
+                        h(
                           "div",
-                          { className: "bg-green-900/30 border border-green-600 rounded-lg p-4 text-center" },
-                          h("div", { className: "text-green-400 font-bold text-lg mb-2" }, "🔒 Announcement Locked"),
-                          h("div", { className: "text-slate-300" }, 
-                            `You announced: `,
-                            h("span", { className: "text-blue-400 font-bold" }, `✂️ ${myAnnouncement.defusing}`),
-                            h("span", { className: "text-slate-500 mx-2" }, "•"),
-                            h("span", { className: "text-red-400 font-bold" }, `💣 ${myAnnouncement.bomb}`)
-                          )
+                          { className: "text-sm text-blue-200" },
+                          "Defusing"
+                        ),
+                        h(
+                          "div",
+                          { className: "text-xl font-bold text-white" },
+                          myActualCards.defusing
                         )
-                      : h(
+                      ),
+                      h(
+                        "div",
+                        { className: "bg-red-800 rounded p-2" },
+                        h("div", { className: "text-2xl mb-1" }, "💣"),
+                        h("div", { className: "text-sm text-red-200" }, "Bomb"),
+                        h(
                           "div",
-                          null,
-                          h("div", { className: "text-white font-bold mb-3" }, "Announce Your Cards (You can lie!):"),
-                          h(
+                          { className: "text-xl font-bold text-white" },
+                          myActualCards.bomb
+                        )
+                      ),
+                      h(
+                        "div",
+                        { className: "bg-slate-700 rounded p-2" },
+                        h("div", { className: "text-2xl mb-1" }, "✓"),
+                        h(
+                          "div",
+                          { className: "text-sm text-slate-300" },
+                          "Safe"
+                        ),
+                        h(
+                          "div",
+                          { className: "text-xl font-bold text-white" },
+                          myActualCards.safe
+                        )
+                      )
+                    ),
+
+                    // ANNOUNCEMENT SECTION
+                    h(
+                      "div",
+                      { className: "mt-4 border-t border-slate-700 pt-4" },
+                      hasAnnouncedThisRound
+                        ? h(
                             "div",
-                            { className: "grid grid-cols-2 gap-4" },
-                            // Defusing announcer
+                            {
+                              className:
+                                "bg-green-900/30 border border-green-600 rounded-lg p-4 text-center",
+                            },
                             h(
                               "div",
-                              { className: "bg-blue-900/30 rounded-lg p-3" },
-                              h("div", { className: "text-blue-300 text-sm mb-2 flex items-center gap-1" },
-                                h("span", null, "✂️ Defusing")
+                              {
+                                className:
+                                  "text-green-400 font-bold text-lg mb-2",
+                              },
+                              "🔒 Announcement Locked"
+                            ),
+                            h(
+                              "div",
+                              { className: "text-slate-300" },
+                              `You announced: `,
+                              h(
+                                "span",
+                                { className: "text-blue-400 font-bold" },
+                                `✂️ ${myAnnouncement.defusing}`
                               ),
                               h(
+                                "span",
+                                { className: "text-slate-500 mx-2" },
+                                "•"
+                              ),
+                              h(
+                                "span",
+                                { className: "text-red-400 font-bold" },
+                                `💣 ${myAnnouncement.bomb}`
+                              )
+                            )
+                          )
+                        : h(
+                            "div",
+                            null,
+                            h(
+                              "div",
+                              { className: "text-white font-bold mb-3" },
+                              "Announce Your Cards (You can lie!):"
+                            ),
+                            h(
+                              "div",
+                              { className: "grid grid-cols-2 gap-4" },
+                              // Defusing announcer
+                              h(
                                 "div",
-                                { className: "flex items-center justify-center gap-3" },
+                                { className: "bg-blue-900/30 rounded-lg p-3" },
                                 h(
-                                  "button",
+                                  "div",
                                   {
-                                    onClick: () => setDefusingAnnounce(Math.max(0, defusingAnnounce - 1)),
-                                    className: "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-lg font-bold text-xl"
+                                    className:
+                                      "text-blue-300 text-sm mb-2 flex items-center gap-1",
                                   },
-                                  "-"
+                                  h("span", null, "✂️ Defusing")
                                 ),
-                                h("div", { className: "text-3xl font-bold text-white w-12 text-center" }, defusingAnnounce),
                                 h(
-                                  "button",
+                                  "div",
                                   {
-                                    onClick: () => setDefusingAnnounce(Math.min(5, defusingAnnounce + 1)),
-                                    className: "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-lg font-bold text-xl"
+                                    className:
+                                      "flex items-center justify-center gap-3",
                                   },
-                                  "+"
+                                  h(
+                                    "button",
+                                    {
+                                      onClick: () =>
+                                        setDefusingAnnounce(
+                                          Math.max(0, defusingAnnounce - 1)
+                                        ),
+                                      className:
+                                        "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-lg font-bold text-xl",
+                                    },
+                                    "-"
+                                  ),
+                                  h(
+                                    "div",
+                                    {
+                                      className:
+                                        "text-3xl font-bold text-white w-12 text-center",
+                                    },
+                                    defusingAnnounce
+                                  ),
+                                  h(
+                                    "button",
+                                    {
+                                      onClick: () =>
+                                        setDefusingAnnounce(
+                                          Math.min(5, defusingAnnounce + 1)
+                                        ),
+                                      className:
+                                        "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-lg font-bold text-xl",
+                                    },
+                                    "+"
+                                  )
+                                )
+                              ),
+                              // Bomb announcer
+                              h(
+                                "div",
+                                { className: "bg-red-900/30 rounded-lg p-3" },
+                                h(
+                                  "div",
+                                  {
+                                    className:
+                                      "text-red-300 text-sm mb-2 flex items-center gap-1",
+                                  },
+                                  h("span", null, "💣 Bomb")
+                                ),
+                                h(
+                                  "div",
+                                  {
+                                    className:
+                                      "flex items-center justify-center gap-3",
+                                  },
+                                  h(
+                                    "button",
+                                    {
+                                      onClick: () =>
+                                        setBombAnnounce(
+                                          Math.max(0, bombAnnounce - 1)
+                                        ),
+                                      className:
+                                        "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-lg font-bold text-xl",
+                                    },
+                                    "-"
+                                  ),
+                                  h(
+                                    "div",
+                                    {
+                                      className:
+                                        "text-3xl font-bold text-white w-12 text-center",
+                                    },
+                                    bombAnnounce
+                                  ),
+                                  h(
+                                    "button",
+                                    {
+                                      onClick: () =>
+                                        setBombAnnounce(
+                                          Math.min(5, bombAnnounce + 1)
+                                        ),
+                                      className:
+                                        "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-lg font-bold text-xl",
+                                    },
+                                    "+"
+                                  )
                                 )
                               )
                             ),
-                            // Bomb announcer
                             h(
-                              "div",
-                              { className: "bg-red-900/30 rounded-lg p-3" },
-                              h("div", { className: "text-red-300 text-sm mb-2 flex items-center gap-1" },
-                                h("span", null, "💣 Bomb")
-                              ),
-                              h(
-                                "div",
-                                { className: "flex items-center justify-center gap-3" },
-                                h(
-                                  "button",
-                                  {
-                                    onClick: () => setBombAnnounce(Math.max(0, bombAnnounce - 1)),
-                                    className: "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-lg font-bold text-xl"
-                                  },
-                                  "-"
-                                ),
-                                h("div", { className: "text-3xl font-bold text-white w-12 text-center" }, bombAnnounce),
-                                h(
-                                  "button",
-                                  {
-                                    onClick: () => setBombAnnounce(Math.min(5, bombAnnounce + 1)),
-                                    className: "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-lg font-bold text-xl"
-                                  },
-                                  "+"
-                                )
-                              )
+                              "button",
+                              {
+                                onClick: announceCards,
+                                className:
+                                  "w-full mt-3 bg-yellow-600 hover:bg-yellow-500 text-white py-2 rounded-lg font-bold transition-all",
+                              },
+                              "📢 Announce These Numbers (Cannot be changed!)"
                             )
-                          ),
-                          h(
-                            "button",
-                            {
-                              onClick: announceCards,
-                              className: "w-full mt-3 bg-yellow-600 hover:bg-yellow-500 text-white py-2 rounded-lg font-bold transition-all"
-                            },
-                            "📢 Announce These Numbers (Cannot be changed!)"
                           )
-                        )
+                    )
                   )
-                )
               ),
 
               // ANNOUNCEMENTS SECTION
@@ -1014,37 +1396,58 @@
                   className:
                     "mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-all",
                 },
-                showAnnouncements ? "📢 Hide Announcements" : "📢 Show Player Announcements"
+                showAnnouncements
+                  ? "📢 Hide Announcements"
+                  : "📢 Show Player Announcements"
               ),
-              showAnnouncements && gameState.announcements && h(
-                "div",
-                { className: "mt-3 bg-slate-900 rounded-lg p-3 max-h-40 overflow-y-auto" },
-                Object.values(gameState.announcements)
-                  .filter(a => a.round === gameState.round)
-                  .map((announcement, idx) =>
-                    h(
-                      "div",
-                      {
-                        key: idx,
-                        className: "text-slate-300 text-sm py-2 border-b border-slate-800 last:border-0"
-                      },
-                      h("strong", { className: "text-white" }, announcement.name + ": "),
-                      h("span", { className: "text-blue-400" }, `✂️ ${announcement.defusing}`),
-                      h("span", { className: "text-slate-500 mx-2" }, "•"),
-                      h("span", { className: "text-red-400" }, `💣 ${announcement.bomb}`)
+              showAnnouncements &&
+                gameState.announcements &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "mt-3 bg-slate-900 rounded-lg p-3 max-h-40 overflow-y-auto",
+                  },
+                  Object.values(gameState.announcements)
+                    .filter((a) => a.round === gameState.round)
+                    .map((announcement, idx) =>
+                      h(
+                        "div",
+                        {
+                          key: idx,
+                          className:
+                            "text-slate-300 text-sm py-2 border-b border-slate-800 last:border-0",
+                        },
+                        h(
+                          "strong",
+                          { className: "text-white" },
+                          announcement.name + ": "
+                        ),
+                        h(
+                          "span",
+                          { className: "text-blue-400" },
+                          `✂️ ${announcement.defusing}`
+                        ),
+                        h("span", { className: "text-slate-500 mx-2" }, "•"),
+                        h(
+                          "span",
+                          { className: "text-red-400" },
+                          `💣 ${announcement.bomb}`
+                        )
+                      )
                     )
-                  )
-              ),
-              
-              isHost && h(
-                "button",
-                {
-                  onClick: () => setShowLog(!showLog),
-                  className:
-                    "mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-all",
-                },
-                showLog ? "📜 Hide Game Log" : "📜 Show Game Log"
-              ),
+                ),
+
+              isHost &&
+                h(
+                  "button",
+                  {
+                    onClick: () => setShowLog(!showLog),
+                    className:
+                      "mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-all",
+                  },
+                  showLog ? "📜 Hide Game Log" : "📜 Show Game Log"
+                ),
               showLog &&
                 gameLog.length > 0 &&
                 h(
@@ -1075,88 +1478,96 @@
                 className:
                   "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
               },
-              gameState.players.filter(player => player.wires && Array.isArray(player.wires)).map((player) => {
-                const isCurrentPlayer = currentPlayerObj.id === player.id;
-                const isMe = player.id === playerId;
-                return h(
-                  "div",
-                  {
-                    key: player.id,
-                    className: `bg-slate-800 rounded-xl p-4 border-2 transition-all ${
-                      isCurrentPlayer
-                        ? "border-yellow-400 shadow-lg shadow-yellow-400/20"
-                        : "border-slate-700"
-                    } ${isMe ? "ring-2 ring-blue-500" : ""}`,
-                  },
-                  h(
+              gameState.players
+                .filter((player) => player.wires && Array.isArray(player.wires))
+                .map((player) => {
+                  const isCurrentPlayer = currentPlayerObj.id === player.id;
+                  const isMe = player.id === playerId;
+                  return h(
                     "div",
-                    { className: "flex justify-between items-center mb-3" },
+                    {
+                      key: player.id,
+                      className: `bg-slate-800 rounded-xl p-4 border-2 transition-all ${
+                        isCurrentPlayer
+                          ? "border-yellow-400 shadow-lg shadow-yellow-400/20"
+                          : "border-slate-700"
+                      } ${isMe ? "ring-2 ring-blue-500" : ""}`,
+                    },
                     h(
-                      "h3",
-                      { className: "text-white font-bold text-lg truncate" },
-                      player.name,
-                      isMe &&
-                        h(
-                          "span",
-                          { className: "text-xs ml-2 text-blue-400" },
-                          "(You)"
-                        ),
-                      isCurrentPlayer &&
-                        h(Scissors, {
-                          className: "inline w-5 h-5 ml-2 text-yellow-400",
-                        })
+                      "div",
+                      { className: "flex justify-between items-center mb-3" },
+                      h(
+                        "h3",
+                        { className: "text-white font-bold text-lg truncate" },
+                        player.name,
+                        isMe &&
+                          h(
+                            "span",
+                            { className: "text-xs ml-2 text-blue-400" },
+                            "(You)"
+                          ),
+                        isCurrentPlayer &&
+                          h(Scissors, {
+                            className: "inline w-5 h-5 ml-2 text-yellow-400",
+                          })
+                      ),
+                      h(
+                        "span",
+                        { className: "text-slate-400 text-sm" },
+                        `${
+                          player.wires.filter((w) => !w.revealed).length
+                        } wires`
+                      )
                     ),
                     h(
-                      "span",
-                      { className: "text-slate-400 text-sm" },
-                      `${player.wires.filter((w) => !w.revealed).length} wires`
+                      "div",
+                      { className: "grid grid-cols-5 gap-2" },
+                      player.wires.map((wire) => {
+                        const canCut =
+                          isMyTurn &&
+                          !isMe &&
+                          !wire.revealed &&
+                          allPlayersAnnounced;
+                        const isSelected =
+                          selectedWire?.playerId === player.id &&
+                          selectedWire?.wireId === wire.id;
+                        return h(
+                          "button",
+                          {
+                            key: wire.id,
+                            onClick: () =>
+                              canCut &&
+                              setSelectedWire({
+                                playerId: player.id,
+                                wireId: wire.id,
+                              }),
+                            disabled: !canCut,
+                            className: `aspect-square rounded-lg transition-all text-xl ${
+                              wire.revealed
+                                ? wire.type === "bomb"
+                                  ? "bg-red-500 text-white"
+                                  : wire.type === "defusing"
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-slate-600 text-slate-400"
+                                : isSelected
+                                ? "bg-yellow-500 scale-110 shadow-lg cursor-pointer"
+                                : canCut
+                                ? "bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105"
+                                : "bg-slate-700 cursor-not-allowed opacity-50"
+                            }`,
+                          },
+                          wire.revealed
+                            ? wire.type === "bomb"
+                              ? "💣"
+                              : wire.type === "defusing"
+                              ? "✂️"
+                              : "✓"
+                            : "?"
+                        );
+                      })
                     )
-                  ),
-                  h(
-                    "div",
-                    { className: "grid grid-cols-5 gap-2" },
-                    player.wires.map((wire) => {
-                      const canCut = isMyTurn && !isMe && !wire.revealed && allPlayersAnnounced;
-                      const isSelected =
-                        selectedWire?.playerId === player.id &&
-                        selectedWire?.wireId === wire.id;
-                      return h(
-                        "button",
-                        {
-                          key: wire.id,
-                          onClick: () =>
-                            canCut &&
-                            setSelectedWire({
-                              playerId: player.id,
-                              wireId: wire.id,
-                            }),
-                          disabled: !canCut,
-                          className: `aspect-square rounded-lg transition-all text-xl ${
-                            wire.revealed
-                              ? wire.type === "bomb"
-                                ? "bg-red-500 text-white"
-                                : wire.type === "defusing"
-                                ? "bg-blue-500 text-white"
-                                : "bg-slate-600 text-slate-400"
-                              : isSelected
-                              ? "bg-yellow-500 scale-110 shadow-lg cursor-pointer"
-                              : canCut
-                              ? "bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105"
-                              : "bg-slate-700 cursor-not-allowed opacity-50"
-                          }`,
-                        },
-                        wire.revealed
-                          ? wire.type === "bomb"
-                            ? "💣"
-                            : wire.type === "defusing"
-                            ? "✂️"
-                            : "✓"
-                          : "?"
-                      );
-                    })
-                  )
-                );
-              })
+                  );
+                })
             ),
             selectedWire &&
               isMyTurn &&
@@ -1234,7 +1645,71 @@
                 )
               )
             )
-          )
+          ),
+
+          // GAME OVER EFFECT OVERLAY
+          showGameOverEffect &&
+            h(
+              "div",
+              {
+                className: `fixed inset-0 z-50 flex items-center justify-center ${
+                  gameOverType === "bomb"
+                    ? "explosion-overlay"
+                    : "victory-overlay"
+                }`,
+              },
+              h(
+                "div",
+                { className: "text-center" },
+                gameOverType === "bomb"
+                  ? h(
+                      "div",
+                      null,
+                      h("div", { className: "text-8xl bomb-explode" }, "💣"),
+                      h(
+                        "div",
+                        {
+                          className:
+                            "text-4xl md:text-6xl font-bold text-red-500 mt-8 screen-shake",
+                        },
+                        "BOOM!"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-xl text-orange-400 mt-4" },
+                        "The bomb exploded!"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-lg text-red-300 mt-2" },
+                        "Big Ben has been destroyed..."
+                      )
+                    )
+                  : h(
+                      "div",
+                      null,
+                      h("div", { className: "text-8xl defuse-success" }, "✂️"),
+                      h(
+                        "div",
+                        {
+                          className:
+                            "text-4xl md:text-6xl font-bold text-blue-400 mt-8",
+                        },
+                        "DEFUSED!"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-xl text-green-400 mt-4" },
+                        "All wires have been cut!"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-lg text-blue-300 mt-2" },
+                        "London is saved!"
+                      )
+                    )
+              )
+            )
         );
       }
 
@@ -1404,6 +1879,10 @@
         const [loading, setLoading] = useState(false);
         const [gameLog, setGameLog] = useState([]);
         const [showLog, setShowLog] = useState(false);
+
+        // Game over effect state (managed here for cutWire access)
+        const [showGameOverEffect, setShowGameOverEffect] = useState(false);
+        const [gameOverType, setGameOverType] = useState(null); // 'bomb' or 'defused'
 
         useEffect(() => {
           if (!roomCode) return;
@@ -1592,16 +2071,26 @@
           if (gameState.players[gameState.currentPlayer].id !== playerId)
             return;
           if (targetPlayerId === playerId) return;
-          
+
           // Enforce announcement requirement at game-state level
-          const allAnnounced = gameState.players.every(p => {
-            const announcement = gameState.announcements && gameState.announcements[p.id];
-            return announcement && announcement.round === gameState.round && announcement.locked;
+          const allAnnounced = gameState.players.every((p) => {
+            const announcement =
+              gameState.announcements && gameState.announcements[p.id];
+            return (
+              announcement &&
+              announcement.round === gameState.round &&
+              announcement.locked
+            );
           });
           if (!allAnnounced) {
-            console.error('Cannot cut wire: not all players have announced');
+            console.error("Cannot cut wire: not all players have announced");
             return;
           }
+
+          // Track if game will end for local effect
+          let willEndGame = false;
+          let endType = null;
+
           const newState = JSON.parse(JSON.stringify(gameState));
           const targetPlayer = newState.players.find(
             (p) => p.id === targetPlayerId
@@ -1616,6 +2105,8 @@
             logMessage += "💣 BOMB!";
             newState.status = "ended";
             newState.winner = "moriarty";
+            willEndGame = true;
+            endType = "bomb";
             log.push({ message: logMessage, timestamp: Date.now() });
             log.push({
               message: "💥 Big Ben destroyed! Moriarty wins!",
@@ -1628,6 +2119,8 @@
             if (newState.defusingFound === newState.config.defusing) {
               newState.status = "ended";
               newState.winner = "sherlock";
+              willEndGame = true;
+              endType = "defused";
               log.push({
                 message: "🎉 All defusing wires found! Sherlock wins!",
                 timestamp: Date.now(),
@@ -1644,6 +2137,8 @@
               if (newState.round === 4) {
                 newState.status = "ended";
                 newState.winner = "moriarty";
+                willEndGame = true;
+                endType = "bomb"; // Time ran out - Moriarty wins
                 log.push({
                   message: "⏰ 4 rounds completed. Moriarty wins!",
                   timestamp: Date.now(),
@@ -1682,8 +2177,20 @@
             }
           }
           try {
-            await database.ref(`rooms/${roomCode}`).set(newState);
-            setSelectedWire(null);
+            // If game is ending, show effect first then update database
+            if (willEndGame) {
+              setGameOverType(endType);
+              setShowGameOverEffect(true);
+              setSelectedWire(null);
+
+              // Delay the database update to allow effect to show
+              setTimeout(async () => {
+                await database.ref(`rooms/${roomCode}`).set(newState);
+              }, 2000);
+            } else {
+              await database.ref(`rooms/${roomCode}`).set(newState);
+              setSelectedWire(null);
+            }
           } catch (err) {
             console.error("Cut wire error:", err);
           }
@@ -1780,6 +2287,8 @@
             showLog,
             setShowLog,
             cutWire,
+            showGameOverEffect,
+            gameOverType,
           });
         }
         return null;
