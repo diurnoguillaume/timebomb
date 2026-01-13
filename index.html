@@ -837,12 +837,7 @@
             className:
               "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
           },
-          gameState.players.map((player) => {
-            // ADD SAFETY CHECK FOR WIRES
-            if (!player.wires || !Array.isArray(player.wires)) {
-              return null;
-            }
-
+         gameState.players.filter(player => player.wires && Array.isArray(player.wires)).map((player) => {
             const isCurrentPlayer = currentPlayerObj.id === player.id;
             const isMe = player.id === playerId;
             return h(
@@ -1332,6 +1327,7 @@
             revealed: false,
           })),
       }));
+      console.log(playersWithRoles);
       const newState = {
         ...gameState,
         status: "playing",
