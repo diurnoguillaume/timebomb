@@ -700,6 +700,7 @@
 
         const isMyTurn = currentPlayerObj.id === playerId;
         const myPlayer = gameState.players.find(p => p.id === playerId);
+        const isHost = playerId === gameState.hostId;
         
         // Count my actual cards
         const myActualCards = myPlayer && myPlayer.wires ? {
