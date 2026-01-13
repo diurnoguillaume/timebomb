@@ -542,10 +542,28 @@
         startGame,
         leaveRoom,
       }) {
+        const [isLoading, setIsLoading] = useState(false);
+        const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+
         const isHost = playerId === gameState.hostId;
         const allReady =
           gameState.players.every((p) => p.ready) &&
           gameState.players.length === gameState.playerCount;
+
+        const handleLeave = async () => {
+          if (isHost && !showLeaveConfirm) {
+            setShowLeaveConfirm(true);
+            return;
+          }
+          setIsLoading(true);
+          await leaveRoom();
+        };
+
+        const handleStartGame = async () => {
+          setIsLoading(true);
+          await startGame();
+          setIsLoading(false);
+        };
 
         return h(
           "div",
@@ -747,43 +765,117 @@
                 },
                 error
               ),
-            h(
-              "div",
-              { className: "flex gap-3" },
-              h(
-                "button",
-                {
-                  onClick: toggleReady,
-                  className: `flex-1 py-3 rounded-lg font-bold transition-all ${
-                    gameState.players.find((p) => p.id === playerId)?.ready
-                      ? "bg-slate-600 hover:bg-slate-500 text-white"
-                      : "bg-green-600 hover:bg-green-500 text-white"
-                  }`,
-                },
-                gameState.players.find((p) => p.id === playerId)?.ready
-                  ? "Not Ready"
-                  : "Ready"
-              ),
+
+            // Leave confirmation for host
+            showLeaveConfirm &&
               isHost &&
+              h(
+                "div",
+                {
+                  className:
+                    "bg-orange-900/50 border border-orange-500 rounded-lg p-4 mb-4",
+                },
+                h(
+                  "p",
+                  { className: "text-orange-200 font-bold mb-2" },
+                  "⚠️ Are you sure?"
+                ),
+                h(
+                  "p",
+                  { className: "text-orange-300 text-sm mb-3" },
+                  "As the host, leaving will close the room for all players."
+                ),
+                h(
+                  "div",
+                  { className: "flex gap-2" },
+                  h(
+                    "button",
+                    {
+                      onClick: () => setShowLeaveConfirm(false),
+                      className:
+                        "flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-lg font-bold transition-all",
+                    },
+                    "Cancel"
+                  ),
+                  h(
+                    "button",
+                    {
+                      onClick: handleLeave,
+                      disabled: isLoading,
+                      className:
+                        "flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg font-bold transition-all disabled:opacity-50",
+                    },
+                    isLoading ? "Leaving..." : "Yes, Leave"
+                  )
+                )
+              ),
+
+            // Action buttons
+            !showLeaveConfirm &&
+              h(
+                "div",
+                { className: "flex gap-3" },
                 h(
                   "button",
                   {
-                    onClick: startGame,
-                    disabled: !allReady,
-                    className:
-                      "flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                    onClick: toggleReady,
+                    disabled: isLoading,
+                    className: `flex-1 py-3 rounded-lg font-bold transition-all ${
+                      gameState.players.find((p) => p.id === playerId)?.ready
+                        ? "bg-slate-600 hover:bg-slate-500 text-white"
+                        : "bg-green-600 hover:bg-green-500 text-white"
+                    } disabled:opacity-50`,
                   },
-                  "Start Game"
+                  gameState.players.find((p) => p.id === playerId)?.ready
+                    ? "✓ Ready"
+                    : "🎮 Ready Up"
                 ),
-              h(
-                "button",
-                {
-                  onClick: leaveRoom,
-                  className:
-                    "px-6 bg-red-600 hover:bg-red-500 text-white py-3 rounded-lg font-bold transition-all",
-                },
-                "Leave"
-              )
+                isHost &&
+                  h(
+                    "button",
+                    {
+                      onClick: handleStartGame,
+                      disabled: !allReady || isLoading,
+                      className:
+                        "flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                    },
+                    isLoading ? "Starting..." : "🚀 Start Game"
+                  ),
+                h(
+                  "button",
+                  {
+                    onClick: handleLeave,
+                    disabled: isLoading,
+                    className:
+                      "px-6 bg-red-600 hover:bg-red-500 text-white py-3 rounded-lg font-bold transition-all disabled:opacity-50",
+                  },
+                  "🚪 Leave"
+                )
+              ),
+
+            // Helpful tips
+            h(
+              "div",
+              { className: "mt-6 text-center" },
+              !allReady &&
+                gameState.players.length === gameState.playerCount &&
+                h(
+                  "p",
+                  { className: "text-yellow-400 text-sm" },
+                  "💡 All players must be ready to start the game"
+                ),
+              gameState.players.length < gameState.playerCount &&
+                h(
+                  "p",
+                  { className: "text-slate-400 text-sm" },
+                  `👥 Waiting for ${
+                    gameState.playerCount - gameState.players.length
+                  } more player${
+                    gameState.playerCount - gameState.players.length > 1
+                      ? "s"
+                      : ""
+                  } to join...`
+                )
             )
           )
         );
@@ -922,9 +1014,6 @@
         const announceCards = async () => {
           if (hasAnnouncedThisRound) return; // Prevent re-announcement
           try {
-            const playerIndex = gameState.players.findIndex(
-              (p) => p.id === playerId
-            );
             const announcements = gameState.announcements || {};
             announcements[playerId] = {
               name: myPlayer.name,
@@ -1720,11 +1809,31 @@
         playerId,
         playAgain,
         leaveRoom,
+        error,
+        roomCode,
       }) {
+        const [isLoading, setIsLoading] = useState(false);
+        const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+
         const isWinner =
           (gameState.winner === "sherlock" && myRole === "sherlock") ||
           (gameState.winner === "moriarty" && myRole === "moriarty");
         const isHost = playerId === gameState.hostId;
+
+        const handlePlayAgain = async () => {
+          setIsLoading(true);
+          await playAgain();
+          setIsLoading(false);
+        };
+
+        const handleLeave = async () => {
+          if (isHost && !showLeaveConfirm) {
+            setShowLeaveConfirm(true);
+            return;
+          }
+          setIsLoading(true);
+          await leaveRoom();
+        };
 
         return h(
           "div",
@@ -1827,35 +1936,106 @@
                   )
                 )
               ),
+              // Room code display
               h(
                 "div",
-                { className: "flex gap-2" },
+                { className: "bg-slate-700/50 rounded-lg p-3 mb-4" },
+                h("span", { className: "text-slate-400 text-sm" }, "Room: "),
+                h(
+                  "span",
+                  { className: "text-white font-mono font-bold" },
+                  roomCode
+                )
+              ),
+
+              // Error display
+              error &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm mb-4",
+                  },
+                  error
+                ),
+
+              // Leave confirmation for host
+              showLeaveConfirm &&
                 isHost &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "bg-orange-900/50 border border-orange-500 rounded-lg p-4 mb-4",
+                  },
+                  h(
+                    "p",
+                    { className: "text-orange-200 font-bold mb-2" },
+                    "⚠️ Are you sure?"
+                  ),
+                  h(
+                    "p",
+                    { className: "text-orange-300 text-sm mb-3" },
+                    "As the host, leaving will close the room for all players."
+                  ),
+                  h(
+                    "div",
+                    { className: "flex gap-2" },
+                    h(
+                      "button",
+                      {
+                        onClick: () => setShowLeaveConfirm(false),
+                        className:
+                          "flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-lg font-bold transition-all",
+                      },
+                      "Cancel"
+                    ),
+                    h(
+                      "button",
+                      {
+                        onClick: handleLeave,
+                        disabled: isLoading,
+                        className:
+                          "flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg font-bold transition-all disabled:opacity-50",
+                      },
+                      isLoading ? "Leaving..." : "Yes, Leave"
+                    )
+                  )
+                ),
+
+              // Action buttons
+              !showLeaveConfirm &&
+                h(
+                  "div",
+                  { className: "flex gap-2" },
+                  isHost &&
+                    h(
+                      "button",
+                      {
+                        onClick: handlePlayAgain,
+                        disabled: isLoading,
+                        className:
+                          "flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-lg font-bold hover:from-green-700 hover:to-green-600 transition-all disabled:opacity-50",
+                      },
+                      isLoading ? "Starting..." : "🔄 Play Again"
+                    ),
                   h(
                     "button",
                     {
-                      onClick: playAgain,
-                      className:
-                        "flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-lg font-bold hover:from-green-700 hover:to-green-600 transition-all",
+                      onClick: handleLeave,
+                      disabled: isLoading,
+                      className: `${
+                        isHost ? "flex-1" : "w-full"
+                      } bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition-all disabled:opacity-50`,
                     },
-                    "Play Again"
-                  ),
-                h(
-                  "button",
-                  {
-                    onClick: leaveRoom,
-                    className: `${
-                      isHost ? "flex-1" : "w-full"
-                    } bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition-all`,
-                  },
-                  "Leave Room"
-                )
-              ),
+                    isLoading ? "Leaving..." : "🚪 Leave Room"
+                  )
+                ),
               !isHost &&
                 h(
                   "p",
-                  { className: "text-slate-400 text-sm" },
-                  "Waiting for host to start a new game..."
+                  { className: "text-slate-400 text-sm mt-3" },
+                  "💡 Waiting for host to start a new game..."
                 )
             )
           )
@@ -1892,6 +2072,21 @@
             if (state) {
               setGameState(state);
               if (state.log) setGameLog(state.log);
+
+              // Check if current player was removed from the game
+              const playerStillInGame =
+                state.players && state.players.some((p) => p.id === playerId);
+              if (!playerStillInGame && playerId !== null) {
+                // Player was removed, go back to home
+                setScreen("home");
+                setRoomCode("");
+                setPlayerId(null);
+                setGameState(null);
+                setMyRole(null);
+                setError("You were removed from the room.");
+                return;
+              }
+
               if (state.status === "lobby" && screen !== "lobby")
                 setScreen("lobby");
               else if (state.status === "playing" && screen !== "game") {
@@ -1902,6 +2097,16 @@
                 }
               } else if (state.status === "ended" && screen !== "end")
                 setScreen("end");
+            } else {
+              // Room was deleted (host left)
+              if (screen !== "home") {
+                setScreen("home");
+                setRoomCode("");
+                setPlayerId(null);
+                setGameState(null);
+                setMyRole(null);
+                setError("The room was closed by the host.");
+              }
             }
           };
           roomRef.on("value", handleUpdate);
@@ -2202,7 +2407,34 @@
           setTimeout(() => setCopied(false), 2000);
         };
 
-        const leaveRoom = () => {
+        const leaveRoom = async () => {
+          try {
+            if (gameState && roomCode) {
+              const isHost = playerId === gameState.hostId;
+
+              if (isHost) {
+                // Host leaves: delete the entire room
+                await database.ref(`rooms/${roomCode}`).remove();
+              } else {
+                // Non-host leaves: remove player from the room
+                const updatedPlayers = gameState.players.filter(
+                  (p) => p.id !== playerId
+                );
+                if (updatedPlayers.length > 0) {
+                  await database
+                    .ref(`rooms/${roomCode}/players`)
+                    .set(updatedPlayers);
+                } else {
+                  // No players left, delete room
+                  await database.ref(`rooms/${roomCode}`).remove();
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Leave room error:", err);
+          }
+
+          // Reset local state
           setScreen("home");
           setRoomCode("");
           setPlayerId(null);
@@ -2211,33 +2443,48 @@
           setInputCode("");
           setError("");
           setGameLog([]);
+          setShowGameOverEffect(false);
+          setGameOverType(null);
         };
 
         const playAgain = async () => {
           if (playerId !== gameState.hostId) return;
+
+          // Reset game-over effects immediately
+          setShowGameOverEffect(false);
+          setGameOverType(null);
+
           const newState = {
-            ...gameState,
+            code: roomCode,
             status: "lobby",
+            hostId: gameState.hostId,
+            playerCount: gameState.playerCount,
             players: gameState.players.map((p) => ({
-              ...p,
+              id: p.id,
+              name: p.name,
               ready: false,
-              role: undefined,
-              wires: undefined,
             })),
-            currentPlayer: undefined,
-            round: undefined,
-            revealedInRound: undefined,
-            defusingFound: undefined,
-            config: undefined,
-            winner: undefined,
-            log: [],
+            createdAt: Date.now(),
+            // Explicitly remove game-specific fields
+            announcements: null,
+            currentPlayer: null,
+            round: null,
+            revealedInRound: null,
+            defusingFound: null,
+            config: null,
+            winner: null,
+            log: null,
           };
+
           try {
             await database.ref(`rooms/${roomCode}`).set(newState);
             setMyRole(null);
+            setGameLog([]);
+            setSelectedWire(null);
             setScreen("lobby");
           } catch (err) {
             console.error("Play again error:", err);
+            setError("Failed to restart game. Please try again.");
           }
         };
 
@@ -2274,6 +2521,8 @@
             playerId,
             playAgain,
             leaveRoom,
+            error,
+            roomCode,
           });
         }
         if (screen === "game") {
