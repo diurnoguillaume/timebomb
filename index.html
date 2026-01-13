@@ -1314,7 +1314,7 @@
       const wireDeck = [
         ...Array(config.defusing).fill("defusing"),
         ...Array(config.bomb).fill("bomb"),
-        ...Array(config.wires - config.defusing - config.bomb).fill("safe"),
+        ...Array(config.wires).fill("safe"),
       ].sort(() => Math.random() - 0.5);
       const playersWithRoles = gameState.players.map((player, idx) => ({
         ...player,
@@ -1327,7 +1327,6 @@
             revealed: false,
           })),
       }));
-      console.log(playersWithRoles);
       const newState = {
         ...gameState,
         status: "playing",
@@ -1339,6 +1338,7 @@
         config,
         log: [{ message: "🎮 Game started!", timestamp: Date.now() }],
       };
+      console.log(newState);
       try {
         await database.ref(`rooms/${roomCode}`).set(newState);
         const me = playersWithRoles.find((p) => p.id === playerId);
