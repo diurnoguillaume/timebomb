@@ -659,7 +659,40 @@
         setShowLog,
         cutWire,
       }) {
+        // ADD SAFETY CHECKS HERE
+        if (!gameState || !gameState.players || !gameState.config) {
+          return h(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+            },
+            h(
+              "div",
+              { className: "text-white text-center" },
+              h("div", { className: "text-2xl mb-4" }, "⏳"),
+              h("div", null, "Loading game...")
+            )
+          );
+        }
+
         const currentPlayerObj = gameState.players[gameState.currentPlayer];
+        if (!currentPlayerObj) {
+          return h(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+            },
+            h(
+              "div",
+              { className: "text-white text-center" },
+              h("div", { className: "text-2xl mb-4" }, "⏳"),
+              h("div", null, "Loading game...")
+            )
+          );
+        }
+
         const isMyTurn = currentPlayerObj.id === playerId;
 
         return h(
@@ -788,722 +821,728 @@
                     .map((entry, idx) =>
                       h(
                         "div",
-                        {
-                          key: idx,
-                          className:
-                            "text-slate-300 text-xs py-1 border-b border-slate-800 last:border-0",
-                        },
-                        entry.message
-                      )
-                    )
+                    {
+                      key: idx,
+                      className:
+                        "text-slate-300 text-xs py-1 border-b border-slate-800 last:border-0",
+                    },
+                    entry.message
+                  )
                 )
-            ),
-            h(
+            )
+        ),
+        h(
+          "div",
+          {
+            className:
+              "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+          },
+          gameState.players.map((player) => {
+            // ADD SAFETY CHECK FOR WIRES
+            if (!player.wires || !Array.isArray(player.wires)) {
+              return null;
+            }
+
+            const isCurrentPlayer = currentPlayerObj.id === player.id;
+            const isMe = player.id === playerId;
+            return h(
               "div",
               {
-                className:
-                  "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+                key: player.id,
+                className: `bg-slate-800 rounded-xl p-4 border-2 transition-all ${
+                  isCurrentPlayer
+                    ? "border-yellow-400 shadow-lg shadow-yellow-400/20"
+                    : "border-slate-700"
+                } ${isMe ? "ring-2 ring-blue-500" : ""}`,
               },
-              gameState.players.map((player) => {
-                const isCurrentPlayer = currentPlayerObj.id === player.id;
-                const isMe = player.id === playerId;
-                return h(
-                  "div",
-                  {
-                    key: player.id,
-                    className: `bg-slate-800 rounded-xl p-4 border-2 transition-all ${
-                      isCurrentPlayer
-                        ? "border-yellow-400 shadow-lg shadow-yellow-400/20"
-                        : "border-slate-700"
-                    } ${isMe ? "ring-2 ring-blue-500" : ""}`,
-                  },
-                  h(
-                    "div",
-                    { className: "flex justify-between items-center mb-3" },
-                    h(
-                      "h3",
-                      { className: "text-white font-bold text-lg truncate" },
-                      player.name,
-                      isMe &&
-                        h(
-                          "span",
-                          { className: "text-xs ml-2 text-blue-400" },
-                          "(You)"
-                        ),
-                      isCurrentPlayer &&
-                        h(Scissors, {
-                          className: "inline w-5 h-5 ml-2 text-yellow-400",
-                        })
-                    ),
+              h(
+                "div",
+                { className: "flex justify-between items-center mb-3" },
+                h(
+                  "h3",
+                  { className: "text-white font-bold text-lg truncate" },
+                  player.name,
+                  isMe &&
                     h(
                       "span",
-                      { className: "text-slate-400 text-sm" },
-                      `${player.wires.filter((w) => !w.revealed).length} wires`
-                    )
-                  ),
-                  h(
-                    "div",
-                    { className: "grid grid-cols-5 gap-2" },
-                    player.wires.map((wire) => {
-                      const canCut = isMyTurn && !isMe && !wire.revealed;
-                      const isSelected =
-                        selectedWire?.playerId === player.id &&
-                        selectedWire?.wireId === wire.id;
-                      return h(
-                        "button",
-                        {
-                          key: wire.id,
-                          onClick: () =>
-                            canCut &&
-                            setSelectedWire({
-                              playerId: player.id,
-                              wireId: wire.id,
-                            }),
-                          disabled: !canCut,
-                          className: `aspect-square rounded-lg transition-all text-xl ${
-                            wire.revealed
-                              ? wire.type === "bomb"
-                                ? "bg-red-500 text-white"
-                                : wire.type === "defusing"
-                                ? "bg-blue-500 text-white"
-                                : "bg-slate-600 text-slate-400"
-                              : isSelected
-                              ? "bg-yellow-500 scale-110 shadow-lg cursor-pointer"
-                              : canCut
-                              ? "bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105"
-                              : "bg-slate-700 cursor-not-allowed opacity-50"
-                          }`,
-                        },
+                      { className: "text-xs ml-2 text-blue-400" },
+                      "(You)"
+                    ),
+                  isCurrentPlayer &&
+                    h(Scissors, {
+                      className: "inline w-5 h-5 ml-2 text-yellow-400",
+                    })
+                ),
+                h(
+                  "span",
+                  { className: "text-slate-400 text-sm" },
+                  `${player.wires.filter((w) => !w.revealed).length} wires`
+                )
+              ),
+              h(
+                "div",
+                { className: "grid grid-cols-5 gap-2" },
+                player.wires.map((wire) => {
+                  const canCut = isMyTurn && !isMe && !wire.revealed;
+                  const isSelected =
+                    selectedWire?.playerId === player.id &&
+                    selectedWire?.wireId === wire.id;
+                  return h(
+                    "button",
+                    {
+                      key: wire.id,
+                      onClick: () =>
+                        canCut &&
+                        setSelectedWire({
+                          playerId: player.id,
+                          wireId: wire.id,
+                        }),
+                      disabled: !canCut,
+                      className: `aspect-square rounded-lg transition-all text-xl ${
                         wire.revealed
                           ? wire.type === "bomb"
-                            ? "💣"
+                            ? "bg-red-500 text-white"
                             : wire.type === "defusing"
-                            ? "✂️"
-                            : "✓"
-                          : "?"
-                      );
-                    })
-                  )
-                );
-              })
-            ),
-            selectedWire &&
-              isMyTurn &&
+                            ? "bg-blue-500 text-white"
+                            : "bg-slate-600 text-slate-400"
+                          : isSelected
+                          ? "bg-yellow-500 scale-110 shadow-lg cursor-pointer"
+                          : canCut
+                          ? "bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105"
+                          : "bg-slate-700 cursor-not-allowed opacity-50"
+                      }`,
+                    },
+                    wire.revealed
+                      ? wire.type === "bomb"
+                        ? "💣"
+                        : wire.type === "defusing"
+                        ? "✂️"
+                        : "✓"
+                      : "?"
+                  );
+                })
+              )
+            );
+          })
+        ),
+        selectedWire &&
+          isMyTurn &&
+          h(
+            "div",
+            {
+              className:
+                "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+            },
+            h(
+              "button",
+              {
+                onClick: () =>
+                  cutWire(selectedWire.playerId, selectedWire.wireId),
+                className:
+                  "bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-all hover:scale-105",
+              },
+              h(Scissors, { className: "inline w-6 h-6 mr-2" }),
+              "Cut Wire"
+            )
+          ),
+        h(
+          "div",
+          {
+            className:
+              "mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700 mb-20",
+          },
+          h(
+            "h4",
+            { className: "text-white font-bold mb-3 flex items-center" },
+            h(AlertCircle, { className: "w-5 h-5 mr-2" }),
+            "Wire Types"
+          ),
+          h(
+            "div",
+            { className: "grid grid-cols-3 gap-4 text-sm" },
+            h(
+              "div",
+              { className: "flex items-center gap-2" },
               h(
                 "div",
                 {
                   className:
-                    "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+                    "w-8 h-8 bg-slate-600 rounded flex items-center justify-center text-slate-400",
                 },
-                h(
-                  "button",
-                  {
-                    onClick: () =>
-                      cutWire(selectedWire.playerId, selectedWire.wireId),
-                    className:
-                      "bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-all hover:scale-105",
-                  },
-                  h(Scissors, { className: "inline w-6 h-6 mr-2" }),
-                  "Cut Wire"
-                )
+                "✓"
               ),
+              h("span", { className: "text-slate-300" }, "Safe Wire")
+            ),
             h(
               "div",
-              {
-                className:
-                  "mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700 mb-20",
-              },
-              h(
-                "h4",
-                { className: "text-white font-bold mb-3 flex items-center" },
-                h(AlertCircle, { className: "w-5 h-5 mr-2" }),
-                "Wire Types"
-              ),
+              { className: "flex items-center gap-2" },
               h(
                 "div",
-                { className: "grid grid-cols-3 gap-4 text-sm" },
+                {
+                  className:
+                    "w-8 h-8 bg-blue-500 rounded flex items-center justify-center",
+                },
+                "✂️"
+              ),
+              h("span", { className: "text-slate-300" }, "Defusing Wire")
+            ),
+            h(
+              "div",
+              { className: "flex items-center gap-2" },
+              h(
+                "div",
+                {
+                  className:
+                    "w-8 h-8 bg-red-500 rounded flex items-center justify-center",
+                },
+                "💣"
+              ),
+              h("span", { className: "text-slate-300" }, "Bomb")
+            )
+          )
+        )
+      )
+    );
+  }
+
+  // EndScreen Component
+  function EndScreen({
+    gameState,
+    myRole,
+    playerId,
+    playAgain,
+    leaveRoom,
+  }) {
+    const isWinner =
+      (gameState.winner === "sherlock" && myRole === "sherlock") ||
+      (gameState.winner === "moriarty" && myRole === "moriarty");
+    const isHost = playerId === gameState.hostId;
+
+    return h(
+      "div",
+      {
+        className:
+          "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+      },
+      h(
+        "div",
+        {
+          className:
+            "bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-700 text-center",
+        },
+        h(
+          "div",
+          { className: "mb-6" },
+          gameState.winner === "sherlock"
+            ? h(Shield, {
+                className:
+                  "w-20 h-20 mx-auto text-blue-400 mb-4 animate-pulse",
+              })
+            : h(Zap, {
+                className:
+                  "w-20 h-20 mx-auto text-red-400 mb-4 animate-pulse",
+              })
+        ),
+        h(
+          "h2",
+          { className: "text-3xl font-bold text-white mb-4" },
+          gameState.winner === "sherlock"
+            ? "Bomb Defused!"
+            : "Big Ben Destroyed!"
+        ),
+        h(
+          "p",
+          { className: "text-xl mb-6 text-slate-300" },
+          h(
+            "span",
+            {
+              className: `font-bold ${
+                gameState.winner === "sherlock"
+                  ? "text-blue-400"
+                  : "text-red-400"
+              }`,
+            },
+            gameState.winner === "sherlock"
+              ? "Sherlock's Team Wins!"
+              : "Moriarty's Team Wins!"
+          )
+        ),
+        h(
+          "div",
+          { className: "bg-slate-900 rounded-lg p-4 mb-6" },
+          h(
+            "p",
+            {
+              className: `text-lg font-bold ${
+                isWinner ? "text-green-400" : "text-orange-400"
+              }`,
+            },
+            isWinner ? "🎉 You Won!" : "😔 You Lost"
+          ),
+          h(
+            "p",
+            { className: "text-slate-400 mt-2" },
+            `You were on ${
+              myRole === "sherlock" ? "Sherlock's" : "Moriarty's"
+            } team`
+          )
+        ),
+        h(
+          "div",
+          { className: "space-y-4" },
+          h(
+            "div",
+            { className: "bg-slate-900 rounded-lg p-4 text-left" },
+            h(
+              "h3",
+              { className: "font-bold text-white mb-2" },
+              "Team Roles:"
+            ),
+            gameState.players.map((p) =>
+              h(
+                "div",
+                {
+                  key: p.id,
+                  className: "flex justify-between text-sm py-1",
+                },
+                h("span", { className: "text-slate-300" }, `${p.name}:`),
                 h(
-                  "div",
-                  { className: "flex items-center gap-2" },
-                  h(
-                    "div",
-                    {
-                      className:
-                        "w-8 h-8 bg-slate-600 rounded flex items-center justify-center text-slate-400",
-                    },
-                    "✓"
-                  ),
-                  h("span", { className: "text-slate-300" }, "Safe Wire")
-                ),
-                h(
-                  "div",
-                  { className: "flex items-center gap-2" },
-                  h(
-                    "div",
-                    {
-                      className:
-                        "w-8 h-8 bg-blue-500 rounded flex items-center justify-center",
-                    },
-                    "✂️"
-                  ),
-                  h("span", { className: "text-slate-300" }, "Defusing Wire")
-                ),
-                h(
-                  "div",
-                  { className: "flex items-center gap-2" },
-                  h(
-                    "div",
-                    {
-                      className:
-                        "w-8 h-8 bg-red-500 rounded flex items-center justify-center",
-                    },
-                    "💣"
-                  ),
-                  h("span", { className: "text-slate-300" }, "Bomb")
+                  "span",
+                  {
+                    className:
+                      p.role === "sherlock"
+                        ? "text-blue-400"
+                        : "text-red-400",
+                  },
+                  p.role === "sherlock" ? "Sherlock" : "Moriarty"
                 )
               )
             )
-          )
-        );
-      }
+          ),
+          h(
+            "div",
+            { className: "flex gap-2" },
+            isHost &&
+              h(
+                "button",
+                {
+                  onClick: playAgain,
+                  className:
+                    "flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-lg font-bold hover:from-green-700 hover:to-green-600 transition-all",
+                },
+                "Play Again"
+              ),
+            h(
+              "button",
+              {
+                onClick: leaveRoom,
+                className: `${
+                  isHost ? "flex-1" : "w-full"
+                } bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition-all`,
+              },
+              "Leave Room"
+            )
+          ),
+          !isHost &&
+            h(
+              "p",
+              { className: "text-slate-400 text-sm" },
+              "Waiting for host to start a new game..."
+            )
+        )
+      )
+    );
+  }
 
-      // EndScreen Component
-      function EndScreen({
+  // ==========================================
+  // MAIN APP
+  // ==========================================
+  function TimeBombGame() {
+    const [screen, setScreen] = useState("home");
+    const [roomCode, setRoomCode] = useState("");
+    const [inputCode, setInputCode] = useState("");
+    const [playerId, setPlayerId] = useState(null);
+    const [playerName, setPlayerName] = useState("");
+    const [gameState, setGameState] = useState(null);
+    const [myRole, setMyRole] = useState(null);
+    const [selectedWire, setSelectedWire] = useState(null);
+    const [copied, setCopied] = useState(false);
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [gameLog, setGameLog] = useState([]);
+    const [showLog, setShowLog] = useState(false);
+
+    useEffect(() => {
+      if (!roomCode) return;
+      const roomRef = database.ref(`rooms/${roomCode}`);
+      const handleUpdate = (snapshot) => {
+        const state = snapshot.val();
+        if (state) {
+          setGameState(state);
+          if (state.log) setGameLog(state.log);
+          if (state.status === "lobby" && screen !== "lobby")
+            setScreen("lobby");
+          else if (state.status === "playing" && screen !== "game") {
+            setScreen("game");
+            if (!myRole && playerId !== null) {
+              const player = state.players.find((p) => p.id === playerId);
+              if (player) setMyRole(player.role);
+            }
+          } else if (state.status === "ended" && screen !== "end")
+            setScreen("end");
+        }
+      };
+      roomRef.on("value", handleUpdate);
+      return () => roomRef.off("value", handleUpdate);
+    }, [roomCode, playerId, myRole, screen]);
+
+    const createRoom = async () => {
+      if (!playerName.trim()) {
+        setError("Please enter your name");
+        return;
+      }
+      setLoading(true);
+      setError("");
+      const code = generateRoomCode();
+      const newPlayerId = 0;
+      const initialState = {
+        code,
+        status: "lobby",
+        hostId: newPlayerId,
+        playerCount: 5,
+        players: [
+          { id: newPlayerId, name: playerName.trim(), ready: false },
+        ],
+        createdAt: Date.now(),
+      };
+      try {
+        await database.ref(`rooms/${code}`).set(initialState);
+        setRoomCode(code);
+        setPlayerId(newPlayerId);
+        setGameState(initialState);
+        setScreen("lobby");
+      } catch (err) {
+        console.error("Create room error:", err);
+        setError("Failed to create room. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const joinRoom = async () => {
+      if (!playerName.trim()) {
+        setError("Please enter your name");
+        return;
+      }
+      if (!inputCode.trim()) {
+        setError("Please enter a room code");
+        return;
+      }
+      setLoading(true);
+      setError("");
+      const code = inputCode.trim().toUpperCase();
+      try {
+        const snapshot = await database.ref(`rooms/${code}`).once("value");
+        if (!snapshot.exists()) {
+          setError("Room not found");
+          setLoading(false);
+          return;
+        }
+        const state = snapshot.val();
+        if (state.status !== "lobby") {
+          setError("Game already started");
+          setLoading(false);
+          return;
+        }
+        if (state.players.length >= state.playerCount) {
+          setError("Room is full");
+          setLoading(false);
+          return;
+        }
+        const newPlayerId = Math.max(...state.players.map((p) => p.id)) + 1;
+        state.players.push({
+          id: newPlayerId,
+          name: playerName.trim(),
+          ready: false,
+        });
+        await database.ref(`rooms/${code}`).set(state);
+        setRoomCode(code);
+        setPlayerId(newPlayerId);
+        setGameState(state);
+        setScreen("lobby");
+      } catch (err) {
+        console.error("Join room error:", err);
+        setError("Failed to join room. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const updatePlayerCount = async (count) => {
+      if (playerId !== gameState.hostId) return;
+      try {
+        await database.ref(`rooms/${roomCode}/playerCount`).set(count);
+      } catch (err) {
+        console.error("Failed to update player count");
+      }
+    };
+
+    const toggleReady = async () => {
+      const playerIndex = gameState.players.findIndex(
+        (p) => p.id === playerId
+      );
+      if (playerIndex === -1) return;
+      try {
+        await database
+          .ref(`rooms/${roomCode}/players/${playerIndex}/ready`)
+          .set(!gameState.players[playerIndex].ready);
+      } catch (err) {
+        console.error("Failed to toggle ready");
+      }
+    };
+
+    const startGame = async () => {
+      if (playerId !== gameState.hostId) return;
+      if (gameState.players.length < 4) {
+        setError("Need at least 4 players to start");
+        return;
+      }
+      if (gameState.players.length !== gameState.playerCount) {
+        setError(`Waiting for ${gameState.playerCount} players`);
+        return;
+      }
+      const config = GAME_CONFIG[gameState.playerCount];
+      const roles = [
+        ...Array(config.sherlock).fill("sherlock"),
+        ...Array(config.moriarty).fill("moriarty"),
+      ].sort(() => Math.random() - 0.5);
+      const wireDeck = [
+        ...Array(config.defusing).fill("defusing"),
+        ...Array(config.bomb).fill("bomb"),
+        ...Array(config.wires - config.defusing - config.bomb).fill("safe"),
+      ].sort(() => Math.random() - 0.5);
+      const playersWithRoles = gameState.players.map((player, idx) => ({
+        ...player,
+        role: roles[idx],
+        wires: wireDeck
+          .slice(idx * 5, (idx + 1) * 5)
+          .map((type, wireIdx) => ({
+            id: `${player.id}-0-${wireIdx}`,
+            type,
+            revealed: false,
+          })),
+      }));
+      const newState = {
+        ...gameState,
+        status: "playing",
+        players: playersWithRoles,
+        currentPlayer: 0,
+        round: 1,
+        revealedInRound: 0,
+        defusingFound: 0,
+        config,
+        log: [{ message: "🎮 Game started!", timestamp: Date.now() }],
+      };
+      try {
+        await database.ref(`rooms/${roomCode}`).set(newState);
+        const me = playersWithRoles.find((p) => p.id === playerId);
+        if (me) setMyRole(me.role);
+        setScreen("game");
+      } catch (err) {
+        console.error("Start game error:", err);
+        setError("Failed to start game");
+      }
+    };
+
+    const cutWire = async (targetPlayerId, wireId) => {
+      if (gameState.players[gameState.currentPlayer].id !== playerId)
+        return;
+      if (targetPlayerId === playerId) return;
+      const newState = JSON.parse(JSON.stringify(gameState));
+      const targetPlayer = newState.players.find(
+        (p) => p.id === targetPlayerId
+      );
+      const currentPlayer = newState.players.find((p) => p.id === playerId);
+      const wire = targetPlayer.wires.find((w) => w.id === wireId);
+      if (wire.revealed) return;
+      wire.revealed = true;
+      const log = newState.log || [];
+      let logMessage = `${currentPlayer.name} cut ${targetPlayer.name}'s wire: `;
+      if (wire.type === "bomb") {
+        logMessage += "💣 BOMB!";
+        newState.status = "ended";
+        newState.winner = "moriarty";
+        log.push({ message: logMessage, timestamp: Date.now() });
+        log.push({
+          message: "💥 Big Ben destroyed! Moriarty wins!",
+          timestamp: Date.now(),
+        });
+      } else if (wire.type === "defusing") {
+        newState.defusingFound += 1;
+        logMessage += `✂️ Defusing (${newState.defusingFound}/${newState.config.defusing})`;
+        log.push({ message: logMessage, timestamp: Date.now() });
+        if (newState.defusingFound === newState.config.defusing) {
+          newState.status = "ended";
+          newState.winner = "sherlock";
+          log.push({
+            message: "🎉 All defusing wires found! Sherlock wins!",
+            timestamp: Date.now(),
+          });
+        }
+      } else {
+        logMessage += "✓ Safe wire";
+        log.push({ message: logMessage, timestamp: Date.now() });
+      }
+      newState.log = log;
+      if (newState.status !== "ended") {
+        newState.revealedInRound += 1;
+        if (newState.revealedInRound === newState.playerCount) {
+          if (newState.round === 4) {
+            newState.status = "ended";
+            newState.winner = "moriarty";
+            log.push({
+              message: "⏰ 4 rounds completed. Moriarty wins!",
+              timestamp: Date.now(),
+            });
+          } else {
+            const unrevealedWires = newState.players
+              .flatMap((p) =>
+                p.wires.filter((w) => !w.revealed).map((w) => w.type)
+              )
+              .sort(() => Math.random() - 0.5);
+            const wiresPerPlayer = Math.floor(
+              unrevealedWires.length / newState.playerCount
+            );
+            newState.players = newState.players.map((player, idx) => ({
+              ...player,
+              wires: unrevealedWires
+                .slice(idx * wiresPerPlayer, (idx + 1) * wiresPerPlayer)
+                .map((type, wireIdx) => ({
+                  id: `${player.id}-${newState.round}-${wireIdx}`,
+                  type,
+                  revealed: false,
+                })),
+            }));
+            newState.round += 1;
+            newState.revealedInRound = 0;
+            log.push({
+              message: `🔄 Round ${newState.round} started!`,
+              timestamp: Date.now(),
+            });
+          }
+        } else {
+          const currentPlayerIndex = newState.players.findIndex(
+            (p) => p.id === targetPlayerId
+          );
+          newState.currentPlayer = currentPlayerIndex;
+        }
+      }
+      try {
+        await database.ref(`rooms/${roomCode}`).set(newState);
+        setSelectedWire(null);
+      } catch (err) {
+        console.error("Cut wire error:", err);
+      }
+    };
+
+    const copyRoomCode = () => {
+      navigator.clipboard.writeText(roomCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+
+    const leaveRoom = () => {
+      setScreen("home");
+      setRoomCode("");
+      setPlayerId(null);
+      setGameState(null);
+      setMyRole(null);
+      setInputCode("");
+      setError("");
+      setGameLog([]);
+    };
+
+    const playAgain = async () => {
+      if (playerId !== gameState.hostId) return;
+      const newState = {
+        ...gameState,
+        status: "lobby",
+        players: gameState.players.map((p) => ({
+          ...p,
+          ready: false,
+          role: undefined,
+          wires: undefined,
+        })),
+        currentPlayer: undefined,
+        round: undefined,
+        revealedInRound: undefined,
+        defusingFound: undefined,
+        config: undefined,
+        winner: undefined,
+        log: [],
+      };
+      try {
+        await database.ref(`rooms/${roomCode}`).set(newState);
+        setMyRole(null);
+        setScreen("lobby");
+      } catch (err) {
+        console.error("Play again error:", err);
+      }
+    };
+
+    if (screen === "home") {
+      return h(HomeScreen, {
+        playerName,
+        setPlayerName,
+        inputCode,
+        setInputCode,
+        error,
+        loading,
+        createRoom,
+        joinRoom,
+      });
+    }
+    if (screen === "lobby") {
+      return h(LobbyScreen, {
+        roomCode,
+        playerId,
+        gameState,
+        copied,
+        error,
+        copyRoomCode,
+        updatePlayerCount,
+        toggleReady,
+        startGame,
+        leaveRoom,
+      });
+    }
+    if (screen === "end") {
+      return h(EndScreen, {
         gameState,
         myRole,
         playerId,
         playAgain,
         leaveRoom,
-      }) {
-        const isWinner =
-          (gameState.winner === "sherlock" && myRole === "sherlock") ||
-          (gameState.winner === "moriarty" && myRole === "moriarty");
-        const isHost = playerId === gameState.hostId;
+      });
+    }
+    if (screen === "game") {
+      return h(GameScreen, {
+        gameState,
+        playerId,
+        myRole,
+        selectedWire,
+        setSelectedWire,
+        gameLog,
+        showLog,
+        setShowLog,
+        cutWire,
+      });
+    }
+    return null;
+  }
 
-        return h(
-          "div",
-          {
-            className:
-              "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
-          },
-          h(
-            "div",
-            {
-              className:
-                "bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-700 text-center",
-            },
-            h(
-              "div",
-              { className: "mb-6" },
-              gameState.winner === "sherlock"
-                ? h(Shield, {
-                    className:
-                      "w-20 h-20 mx-auto text-blue-400 mb-4 animate-pulse",
-                  })
-                : h(Zap, {
-                    className:
-                      "w-20 h-20 mx-auto text-red-400 mb-4 animate-pulse",
-                  })
-            ),
-            h(
-              "h2",
-              { className: "text-3xl font-bold text-white mb-4" },
-              gameState.winner === "sherlock"
-                ? "Bomb Defused!"
-                : "Big Ben Destroyed!"
-            ),
-            h(
-              "p",
-              { className: "text-xl mb-6 text-slate-300" },
-              h(
-                "span",
-                {
-                  className: `font-bold ${
-                    gameState.winner === "sherlock"
-                      ? "text-blue-400"
-                      : "text-red-400"
-                  }`,
-                },
-                gameState.winner === "sherlock"
-                  ? "Sherlock's Team Wins!"
-                  : "Moriarty's Team Wins!"
-              )
-            ),
-            h(
-              "div",
-              { className: "bg-slate-900 rounded-lg p-4 mb-6" },
-              h(
-                "p",
-                {
-                  className: `text-lg font-bold ${
-                    isWinner ? "text-green-400" : "text-orange-400"
-                  }`,
-                },
-                isWinner ? "🎉 You Won!" : "😔 You Lost"
-              ),
-              h(
-                "p",
-                { className: "text-slate-400 mt-2" },
-                `You were on ${
-                  myRole === "sherlock" ? "Sherlock's" : "Moriarty's"
-                } team`
-              )
-            ),
-            h(
-              "div",
-              { className: "space-y-4" },
-              h(
-                "div",
-                { className: "bg-slate-900 rounded-lg p-4 text-left" },
-                h(
-                  "h3",
-                  { className: "font-bold text-white mb-2" },
-                  "Team Roles:"
-                ),
-                gameState.players.map((p) =>
-                  h(
-                    "div",
-                    {
-                      key: p.id,
-                      className: "flex justify-between text-sm py-1",
-                    },
-                    h("span", { className: "text-slate-300" }, `${p.name}:`),
-                    h(
-                      "span",
-                      {
-                        className:
-                          p.role === "sherlock"
-                            ? "text-blue-400"
-                            : "text-red-400",
-                      },
-                      p.role === "sherlock" ? "Sherlock" : "Moriarty"
-                    )
-                  )
-                )
-              ),
-              h(
-                "div",
-                { className: "flex gap-2" },
-                isHost &&
-                  h(
-                    "button",
-                    {
-                      onClick: playAgain,
-                      className:
-                        "flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-lg font-bold hover:from-green-700 hover:to-green-600 transition-all",
-                    },
-                    "Play Again"
-                  ),
-                h(
-                  "button",
-                  {
-                    onClick: leaveRoom,
-                    className: `${
-                      isHost ? "flex-1" : "w-full"
-                    } bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition-all`,
-                  },
-                  "Leave Room"
-                )
-              ),
-              !isHost &&
-                h(
-                  "p",
-                  { className: "text-slate-400 text-sm" },
-                  "Waiting for host to start a new game..."
-                )
-            )
-          )
-        );
-      }
-
-      // ==========================================
-      // MAIN APP
-      // ==========================================
-      function TimeBombGame() {
-        const [screen, setScreen] = useState("home");
-        const [roomCode, setRoomCode] = useState("");
-        const [inputCode, setInputCode] = useState("");
-        const [playerId, setPlayerId] = useState(null);
-        const [playerName, setPlayerName] = useState("");
-        const [gameState, setGameState] = useState(null);
-        const [myRole, setMyRole] = useState(null);
-        const [selectedWire, setSelectedWire] = useState(null);
-        const [copied, setCopied] = useState(false);
-        const [error, setError] = useState("");
-        const [loading, setLoading] = useState(false);
-        const [gameLog, setGameLog] = useState([]);
-        const [showLog, setShowLog] = useState(false);
-
-        useEffect(() => {
-          if (!roomCode) return;
-          const roomRef = database.ref(`rooms/${roomCode}`);
-          const handleUpdate = (snapshot) => {
-            const state = snapshot.val();
-            if (state) {
-              setGameState(state);
-              if (state.log) setGameLog(state.log);
-              if (state.status === "lobby" && screen !== "lobby")
-                setScreen("lobby");
-              else if (state.status === "playing" && screen !== "game") {
-                setScreen("game");
-                if (!myRole && playerId !== null) {
-                  const player = state.players.find((p) => p.id === playerId);
-                  if (player) setMyRole(player.role);
-                }
-              } else if (state.status === "ended" && screen !== "end")
-                setScreen("end");
-            }
-          };
-          roomRef.on("value", handleUpdate);
-          return () => roomRef.off("value", handleUpdate);
-        }, [roomCode, playerId, myRole, screen]);
-
-        const createRoom = async () => {
-          if (!playerName.trim()) {
-            setError("Please enter your name");
-            return;
-          }
-          setLoading(true);
-          setError("");
-          const code = generateRoomCode();
-          const newPlayerId = 0;
-          const initialState = {
-            code,
-            status: "lobby",
-            hostId: newPlayerId,
-            playerCount: 5,
-            players: [
-              { id: newPlayerId, name: playerName.trim(), ready: false },
-            ],
-            createdAt: Date.now(),
-          };
-          try {
-            await database.ref(`rooms/${code}`).set(initialState);
-            setRoomCode(code);
-            setPlayerId(newPlayerId);
-            setGameState(initialState);
-            setScreen("lobby");
-          } catch (err) {
-            console.error("Create room error:", err);
-            setError("Failed to create room. Please try again.");
-          } finally {
-            setLoading(false);
-          }
-        };
-        const joinRoom = async () => {
-          if (!playerName.trim()) {
-            setError("Please enter your name");
-            return;
-          }
-          if (!inputCode.trim()) {
-            setError("Please enter a room code");
-            return;
-          }
-          setLoading(true);
-          setError("");
-          const code = inputCode.trim().toUpperCase();
-          try {
-            const snapshot = await database.ref(`rooms/${code}`).once("value");
-            if (!snapshot.exists()) {
-              setError("Room not found");
-              setLoading(false);
-              return;
-            }
-            const state = snapshot.val();
-            if (state.status !== "lobby") {
-              setError("Game already started");
-              setLoading(false);
-              return;
-            }
-            if (state.players.length >= state.playerCount) {
-              setError("Room is full");
-              setLoading(false);
-              return;
-            }
-            const newPlayerId = Math.max(...state.players.map((p) => p.id)) + 1;
-            state.players.push({
-              id: newPlayerId,
-              name: playerName.trim(),
-              ready: false,
-            });
-            await database.ref(`rooms/${code}`).set(state);
-            setRoomCode(code);
-            setPlayerId(newPlayerId);
-            setGameState(state);
-            setScreen("lobby");
-          } catch (err) {
-            console.error("Join room error:", err);
-            setError("Failed to join room. Please try again.");
-          } finally {
-            setLoading(false);
-          }
-        };
-
-        const updatePlayerCount = async (count) => {
-          if (playerId !== gameState.hostId) return;
-          try {
-            await database.ref(`rooms/${roomCode}/playerCount`).set(count);
-          } catch (err) {
-            console.error("Failed to update player count");
-          }
-        };
-
-        const toggleReady = async () => {
-          const playerIndex = gameState.players.findIndex(
-            (p) => p.id === playerId
-          );
-          if (playerIndex === -1) return;
-          try {
-            await database
-              .ref(`rooms/${roomCode}/players/${playerIndex}/ready`)
-              .set(!gameState.players[playerIndex].ready);
-          } catch (err) {
-            console.error("Failed to toggle ready");
-          }
-        };
-
-        const startGame = async () => {
-          if (playerId !== gameState.hostId) return;
-          if (gameState.players.length < 4) {
-            setError("Need at least 4 players to start");
-            return;
-          }
-          if (gameState.players.length !== gameState.playerCount) {
-            setError(`Waiting for ${gameState.playerCount} players`);
-            return;
-          }
-          const config = GAME_CONFIG[gameState.playerCount];
-          const roles = [
-            ...Array(config.sherlock).fill("sherlock"),
-            ...Array(config.moriarty).fill("moriarty"),
-          ].sort(() => Math.random() - 0.5);
-          const wireDeck = [
-            ...Array(config.defusing).fill("defusing"),
-            ...Array(config.bomb).fill("bomb"),
-            ...Array(config.wires - config.defusing - config.bomb).fill("safe"),
-          ].sort(() => Math.random() - 0.5);
-          const playersWithRoles = gameState.players.map((player, idx) => ({
-            ...player,
-            role: roles[idx],
-            wires: wireDeck
-              .slice(idx * 5, (idx + 1) * 5)
-              .map((type, wireIdx) => ({
-                id: `${player.id}-0-${wireIdx}`,
-                type,
-                revealed: false,
-              })),
-          }));
-          const newState = {
-            ...gameState,
-            status: "playing",
-            players: playersWithRoles,
-            currentPlayer: 0,
-            round: 1,
-            revealedInRound: 0,
-            defusingFound: 0,
-            config,
-            log: [{ message: "🎮 Game started!", timestamp: Date.now() }],
-          };
-          try {
-            await database.ref(`rooms/${roomCode}`).set(newState);
-            const me = playersWithRoles.find((p) => p.id === playerId);
-            if (me) setMyRole(me.role);
-            setScreen("game");
-          } catch (err) {
-            console.error("Start game error:", err);
-            setError("Failed to start game");
-          }
-        };
-
-        const cutWire = async (targetPlayerId, wireId) => {
-          if (gameState.players[gameState.currentPlayer].id !== playerId)
-            return;
-          if (targetPlayerId === playerId) return;
-          const newState = JSON.parse(JSON.stringify(gameState));
-          const targetPlayer = newState.players.find(
-            (p) => p.id === targetPlayerId
-          );
-          const currentPlayer = newState.players.find((p) => p.id === playerId);
-          const wire = targetPlayer.wires.find((w) => w.id === wireId);
-          if (wire.revealed) return;
-          wire.revealed = true;
-          const log = newState.log || [];
-          let logMessage = `${currentPlayer.name} cut ${targetPlayer.name}'s wire: `;
-          if (wire.type === "bomb") {
-            logMessage += "💣 BOMB!";
-            newState.status = "ended";
-            newState.winner = "moriarty";
-            log.push({ message: logMessage, timestamp: Date.now() });
-            log.push({
-              message: "💥 Big Ben destroyed! Moriarty wins!",
-              timestamp: Date.now(),
-            });
-          } else if (wire.type === "defusing") {
-            newState.defusingFound += 1;
-            logMessage += `✂️ Defusing (${newState.defusingFound}/${newState.config.defusing})`;
-            log.push({ message: logMessage, timestamp: Date.now() });
-            if (newState.defusingFound === newState.config.defusing) {
-              newState.status = "ended";
-              newState.winner = "sherlock";
-              log.push({
-                message: "🎉 All defusing wires found! Sherlock wins!",
-                timestamp: Date.now(),
-              });
-            }
-          } else {
-            logMessage += "✓ Safe wire";
-            log.push({ message: logMessage, timestamp: Date.now() });
-          }
-          newState.log = log;
-          if (newState.status !== "ended") {
-            newState.revealedInRound += 1;
-            if (newState.revealedInRound === newState.playerCount) {
-              if (newState.round === 4) {
-                newState.status = "ended";
-                newState.winner = "moriarty";
-                log.push({
-                  message: "⏰ 4 rounds completed. Moriarty wins!",
-                  timestamp: Date.now(),
-                });
-              } else {
-                const unrevealedWires = newState.players
-                  .flatMap((p) =>
-                    p.wires.filter((w) => !w.revealed).map((w) => w.type)
-                  )
-                  .sort(() => Math.random() - 0.5);
-                const wiresPerPlayer = Math.floor(
-                  unrevealedWires.length / newState.playerCount
-                );
-                newState.players = newState.players.map((player, idx) => ({
-                  ...player,
-                  wires: unrevealedWires
-                    .slice(idx * wiresPerPlayer, (idx + 1) * wiresPerPlayer)
-                    .map((type, wireIdx) => ({
-                      id: `${player.id}-${newState.round}-${wireIdx}`,
-                      type,
-                      revealed: false,
-                    })),
-                }));
-                newState.round += 1;
-                newState.revealedInRound = 0;
-                log.push({
-                  message: `🔄 Round ${newState.round} started!`,
-                  timestamp: Date.now(),
-                });
-              }
-            } else {
-              const currentPlayerIndex = newState.players.findIndex(
-                (p) => p.id === targetPlayerId
-              );
-              newState.currentPlayer = currentPlayerIndex;
-            }
-          }
-          try {
-            await database.ref(`rooms/${roomCode}`).set(newState);
-            setSelectedWire(null);
-          } catch (err) {
-            console.error("Cut wire error:", err);
-          }
-        };
-
-        const copyRoomCode = () => {
-          navigator.clipboard.writeText(roomCode);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        };
-
-        const leaveRoom = () => {
-          setScreen("home");
-          setRoomCode("");
-          setPlayerId(null);
-          setGameState(null);
-          setMyRole(null);
-          setInputCode("");
-          setError("");
-          setGameLog([]);
-        };
-
-        const playAgain = async () => {
-          if (playerId !== gameState.hostId) return;
-          const newState = {
-            ...gameState,
-            status: "lobby",
-            players: gameState.players.map((p) => ({
-              ...p,
-              ready: false,
-              role: undefined,
-              wires: undefined,
-            })),
-            currentPlayer: undefined,
-            round: undefined,
-            revealedInRound: undefined,
-            defusingFound: undefined,
-            config: undefined,
-            winner: undefined,
-            log: [],
-          };
-          try {
-            await database.ref(`rooms/${roomCode}`).set(newState);
-            setMyRole(null);
-            setScreen("lobby");
-          } catch (err) {
-            console.error("Play again error:", err);
-          }
-        };
-
-        if (screen === "home") {
-          return h(HomeScreen, {
-            playerName,
-            setPlayerName,
-            inputCode,
-            setInputCode,
-            error,
-            loading,
-            createRoom,
-            joinRoom,
-          });
-        }
-        if (screen === "lobby") {
-          return h(LobbyScreen, {
-            roomCode,
-            playerId,
-            gameState,
-            copied,
-            error,
-            copyRoomCode,
-            updatePlayerCount,
-            toggleReady,
-            startGame,
-            leaveRoom,
-          });
-        }
-        if (screen === "end") {
-          return h(EndScreen, {
-            gameState,
-            myRole,
-            playerId,
-            playAgain,
-            leaveRoom,
-          });
-        }
-        if (screen === "game") {
-          return h(GameScreen, {
-            gameState,
-            playerId,
-            myRole,
-            selectedWire,
-            setSelectedWire,
-            gameLog,
-            showLog,
-            setShowLog,
-            cutWire,
-          });
-        }
-        return null;
-      }
-
-      const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(h(TimeBombGame));
-    </script>
-  </body>
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(h(TimeBombGame));
+</script>
+</body>
 </html>
