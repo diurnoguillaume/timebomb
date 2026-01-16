@@ -1101,6 +1101,14 @@
           }, 200);
         };
 
+        const getRandomIntegerInclusive = (max) => {
+          min = Math.ceil(0)
+          max = Math.floor(max)
+
+          return Math.floor(Math.random() * (max - min + 1)) + min
+        }
+
+
         // Team-based background gradient
         const teamBackground =
           myRole === "sherlock"
@@ -2301,7 +2309,7 @@
             ...gameState,
             status: "playing",
             players: playersWithRoles,
-            currentPlayer: 0,
+            currentPlayer: getRandomIntegerInclusive(gameState.players.length),
             round: 1,
             revealedInRound: 0,
             defusingFound: 0,
