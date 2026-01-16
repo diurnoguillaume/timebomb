@@ -457,6 +457,13 @@
           h("line", { x1: "12", x2: "12.01", y1: "16", y2: "16" })
         );
 
+      const getRandomIntegerInclusive = (max) => {
+        min = Math.ceil(0)
+        max = Math.floor(max)
+
+        return Math.floor(Math.random() * (max - min + 1)) + min
+      }
+
       // HomeScreen Component
       function HomeScreen({
         playerName,
@@ -1100,13 +1107,6 @@
             setPopupExiting(false);
           }, 200);
         };
-
-        const getRandomIntegerInclusive = (max) => {
-          min = Math.ceil(0)
-          max = Math.floor(max)
-
-          return Math.floor(Math.random() * (max - min + 1)) + min
-        }
 
 
         // Team-based background gradient
