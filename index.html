@@ -2317,7 +2317,6 @@
             config,
             log: [{ message: "🎮 Game started!", timestamp: Date.now() }],
           };
-          console.log(newState);
           try {
             await database.ref(`rooms/${roomCode}`).set(newState);
             const me = playersWithRoles.find((p) => p.id === playerId);
