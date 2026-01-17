@@ -3,65 +3,270 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Time Bomb - Victorian Cyberpunk</title>
+    <title>Time Bomb - Multiplayer Game</title>
+    <meta
+      name="description"
+      content="Time Bomb - A thrilling online multiplayer deduction game. Create a room, share the code, and play with friends!"
+    />
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- React & ReactDOM -->
+    <script
+      crossorigin
+      src="https://unpkg.com/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"
+    ></script>
+
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Space+Mono:wght@400;700&display=swap');
-      
-      :root {
-        --color-sherlock: #3b82f6;
-        --color-moriarty: #ef4444;
-      }
-
       body {
-        background-color: #0f172a;
-        color: #e2e8f0;
-        font-family: 'Space Mono', monospace;
-        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+          "Helvetica Neue", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      #root {
+        width: 100%;
+        min-height: 100vh;
       }
 
-      /* ROLE BASED VIGNETTES */
-      .vignette-sherlock { background: radial-gradient(circle, transparent 20%, rgba(15,23,42,0.8) 80%, #0f172a 100%), linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px); background-size: 100% 100%, 20px 20px; }
-      .vignette-moriarty { background: radial-gradient(circle, transparent 20%, rgba(15,23,42,0.8) 80%, #000 100%), linear-gradient(rgba(239,68,68,0.05) 1px, transparent 1px); background-size: 100% 100%, 20px 20px; }
-
-      /* TENSION ANIMATIONS */
-      @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-2px, 1px); } 50% { transform: translate(2px, -1px); } 75% { transform: translate(-1px, -2px); } }
-      .wire-tension { animation: shake 0.1s infinite; }
-      
-      .dossier-card {
-        background: rgba(30, 41, 59, 0.7);
-        backdrop-filter: blur(8px);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 1px solid rgba(255,255,255,0.1);
+      /* Round Transition Animation */
+      @keyframes fadeInScale {
+        0% {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
       }
-      .active-turn-glow { box-shadow: 0 0 25px rgba(234, 179, 8, 0.3); border-color: rgba(234, 179, 8, 0.5); }
-      
-      /* Progress Bar for Hold-to-Cut */
-      .cut-progress { position: absolute; bottom: 0; left: 0; width: 100%; background: white; mix-blend-mode: overlay; transition: height 0.1s linear; }
+      @keyframes fadeOut {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+      @keyframes slideUp {
+        0% {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      .round-transition-enter {
+        animation: fadeInScale 0.4s ease-out forwards;
+      }
+      .round-transition-exit {
+        animation: fadeOut 0.3s ease-out forwards;
+      }
+      .round-number-animate {
+        animation: slideUp 0.5s ease-out 0.2s forwards;
+        opacity: 0;
+      }
+
+      /* Game Over Effects */
+      @keyframes explosionPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+      }
+      @keyframes screenShake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+          transform: translateX(-5px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+          transform: translateX(5px);
+        }
+      }
+      @keyframes explosionFlash {
+        0% {
+          background-color: rgba(239, 68, 68, 0);
+        }
+        20% {
+          background-color: rgba(239, 68, 68, 0.5);
+        }
+        40% {
+          background-color: rgba(251, 146, 60, 0.4);
+        }
+        60% {
+          background-color: rgba(239, 68, 68, 0.3);
+        }
+        100% {
+          background-color: rgba(0, 0, 0, 0.8);
+        }
+      }
+      @keyframes victoryGlow {
+        0% {
+          background-color: rgba(59, 130, 246, 0);
+        }
+        50% {
+          background-color: rgba(59, 130, 246, 0.3);
+        }
+        100% {
+          background-color: rgba(0, 0, 0, 0.8);
+        }
+      }
+      @keyframes bombEmoji {
+        0% {
+          transform: scale(1) rotate(0deg);
+        }
+        25% {
+          transform: scale(1.5) rotate(-10deg);
+        }
+        50% {
+          transform: scale(2) rotate(10deg);
+        }
+        75% {
+          transform: scale(2.5) rotate(-5deg);
+        }
+        100% {
+          transform: scale(3) rotate(0deg);
+          opacity: 0;
+        }
+      }
+      @keyframes defuseSuccess {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.3);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .screen-shake {
+        animation: screenShake 0.5s ease-in-out;
+      }
+      .explosion-overlay {
+        animation: explosionFlash 1.5s ease-out forwards;
+      }
+      .victory-overlay {
+        animation: victoryGlow 1.5s ease-out forwards;
+      }
+      .bomb-explode {
+        animation: bombEmoji 1s ease-out forwards;
+      }
+      .defuse-success {
+        animation: defuseSuccess 0.5s ease-out;
+      }
+
+      /* Announcement Popup Animation */
+      @keyframes popupSlideIn {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.8);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+      @keyframes popupSlideOut {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -50%) scale(0.8);
+        }
+      }
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          box-shadow: 0 0 20px rgba(234, 179, 8, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 40px rgba(234, 179, 8, 0.6);
+        }
+      }
+      .announcement-popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: popupSlideIn 0.3s ease-out forwards;
+        z-index: 60;
+      }
+      .announcement-popup-exit {
+        animation: popupSlideOut 0.2s ease-out forwards;
+      }
+      .announcement-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 55;
+        animation: fadeInScale 0.2s ease-out;
+      }
+      .pulse-attention {
+        animation: pulse-glow 2s infinite;
+      }
+      .announcement-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
     </style>
   </head>
   <body>
     <div id="root"></div>
 
     <script>
-      // --- CONFIG & UTILS (PRESERVED) ---
+      // ==========================================
+      // FIREBASE CONFIGURATION
+      // ==========================================
+      
       const firebaseConfig = {
         apiKey: "AIzaSyDAI46UYQMVMCnNqQD9MqR3yhiHUzghYuA",
         authDomain: "timebomb-game.firebaseapp.com",
-        databaseURL: "https://timebomb-game-default-rtdb.europe-west1.firebasedatabase.app",
+        databaseURL:
+          "https://timebomb-game-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "timebomb-game",
         storageBucket: "timebomb-game.firebasestorage.app",
         messagingSenderId: "752842528482",
         appId: "1:752842528482:web:f97dd6bead7bb6bca4f0bb",
       };
+
       firebase.initializeApp(firebaseConfig);
       const database = firebase.database();
 
+      // ==========================================
+      // GAME CONFIGURATION
+      // ==========================================
       const GAME_CONFIG = {
         4: { sherlock: 3, moriarty: 2, wires: 15, defusing: 4, bomb: 1 },
         5: { sherlock: 3, moriarty: 2, wires: 19, defusing: 5, bomb: 1 },
@@ -70,351 +275,2332 @@
         8: { sherlock: 5, moriarty: 3, wires: 31, defusing: 8, bomb: 1 },
       };
 
-      const { useState, useEffect, useRef, createElement: h } = React;
-
-      // --- NEW ICONS ---
-      const IconWire = () => h("svg", { className: "w-4 h-4", fill: "currentColor", viewBox: "0 0 24 24" }, h("path", { d: "M12 2v20M8 6h8M8 18h8" }));
-      const IconShield = () => h("svg", { className: "w-6 h-6 text-blue-400", fill: "none", stroke: "currentColor", strokeWidth: "2", viewBox: "0 0 24 24" }, h("path", { d: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" }));
-      const IconBomb = () => h("svg", { className: "w-6 h-6 text-red-500", fill: "none", stroke: "currentColor", strokeWidth: "2", viewBox: "0 0 24 24" }, h("circle", { cx: "11", cy: "13", r: "9" }), h("path", { d: "M18.35 5.65L19 5M12 9v4M12 17h.01" }));
+      const generateRoomCode = () => {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let code = "";
+        for (let i = 0; i < 5; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
 
       // ==========================================
-      // GAME SCREEN (REFACTORED UI)
+      // COMPONENTS
       // ==========================================
+      const { useState, useEffect, createElement: h } = React;
 
-      function Wire({ wire, canCut, onCut }) {
-        const [holdTime, setHoldTime] = useState(0);
-        const timerRef = useRef(null);
+      // Simple SVG icon components
+      const Timer = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("line", { x1: "12", x2: "12", y1: "2", y2: "6" }),
+          h("line", { x1: "12", x2: "12", y1: "18", y2: "22" }),
+          h("line", { x1: "4.93", x2: "7.76", y1: "4.93", y2: "7.76" }),
+          h("line", { x1: "16.24", x2: "19.07", y1: "16.24", y2: "19.07" }),
+          h("line", { x1: "2", x2: "6", y1: "12", y2: "12" }),
+          h("line", { x1: "18", x2: "22", y1: "12", y2: "12" }),
+          h("line", { x1: "4.93", x2: "7.76", y1: "19.07", y2: "16.24" }),
+          h("line", { x1: "16.24", x2: "19.07", y1: "7.76", y2: "4.93" })
+        );
+      const Shield = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", {
+            d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
+          })
+        );
+      const Zap = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", {
+            d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z",
+          })
+        );
+      const Users = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", { d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" }),
+          h("circle", { cx: "9", cy: "7", r: "4" }),
+          h("path", { d: "M22 21v-2a4 4 0 0 0-3-3.87" }),
+          h("path", { d: "M16 3.13a4 4 0 0 1 0 7.75" })
+        );
+      const Copy = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("rect", {
+            width: "14",
+            height: "14",
+            x: "8",
+            y: "8",
+            rx: "2",
+            ry: "2",
+          }),
+          h("path", {
+            d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
+          })
+        );
+      const Check = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", { d: "M20 6 9 17l-5-5" })
+        );
+      const Scissors = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("circle", { cx: "6", cy: "6", r: "3" }),
+          h("path", { d: "M8.12 8.12 12 12" }),
+          h("path", { d: "M20 4 8.12 15.88" }),
+          h("circle", { cx: "6", cy: "18", r: "3" }),
+          h("path", { d: "M14.8 14.8 20 20" })
+        );
+      const AlertCircle = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("circle", { cx: "12", cy: "12", r: "10" }),
+          h("line", { x1: "12", x2: "12", y1: "8", y2: "12" }),
+          h("line", { x1: "12", x2: "12.01", y1: "16", y2: "16" })
+        );
 
-        const startHold = () => {
-          if (!canCut || wire.revealed) return;
-          timerRef.current = setInterval(() => {
-            setHoldTime(prev => {
-              if (prev >= 100) {
-                clearInterval(timerRef.current);
-                onCut();
-                return 0;
-              }
-              return prev + 5;
-            });
-          }, 50);
-        };
-
-        const endHold = () => {
-          clearInterval(timerRef.current);
-          setHoldTime(0);
-        };
-
-        const isSafe = wire.type === 'safe';
-        const isDefuse = wire.type === 'defusing';
-        const isBomb = wire.type === 'bomb';
-
-        return h("div", {
-          className: `relative w-8 h-24 mx-1 rounded-full border-2 transition-all cursor-pointer overflow-hidden
-            ${wire.revealed ? 'border-transparent' : 'border-slate-500 hover:border-amber-400'}
-            ${holdTime > 0 ? 'wire-tension' : ''}`,
-          onMouseDown: startHold, onMouseUp: endHold, onMouseLeave: endHold,
-          onTouchStart: startHold, onTouchEnd: endHold
-        },
-          !wire.revealed && h("div", { className: "w-full h-full bg-slate-700 flex flex-col items-center justify-between py-2" },
-            h("div", { className: "w-2 h-2 rounded-full bg-slate-400" }),
-            h("div", { className: "w-1 h-12 bg-amber-600/50" }),
-            h("div", { className: "w-2 h-2 rounded-full bg-slate-400" }),
-            h("div", { className: "cut-progress", style: { height: `${holdTime}%` } })
-          ),
-          wire.revealed && h("div", { className: `w-full h-full flex items-center justify-center text-xl
-            ${isDefuse ? 'bg-blue-600' : isBomb ? 'bg-red-600' : 'bg-slate-800 opacity-20'}` },
-            isDefuse ? "✂️" : isBomb ? "💣" : ""
+      // HomeScreen Component
+      function HomeScreen({
+        playerName,
+        setPlayerName,
+        inputCode,
+        setInputCode,
+        error,
+        loading,
+        createRoom,
+        joinRoom,
+      }) {
+        return h(
+          "div",
+          {
+            className:
+              "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+          },
+          h(
+            "div",
+            {
+              className:
+                "bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-700",
+            },
+            h(
+              "div",
+              { className: "text-center mb-8" },
+              h(Timer, {
+                className: "w-16 h-16 mx-auto mb-4 text-yellow-400",
+              }),
+              h(
+                "h1",
+                { className: "text-4xl font-bold text-white mb-2" },
+                "Time Bomb"
+              ),
+              h(
+                "p",
+                { className: "text-slate-400" },
+                "London, 1890. Defuse or detonate?"
+              )
+            ),
+            h(
+              "div",
+              { className: "space-y-6" },
+              h(
+                "div",
+                null,
+                h(
+                  "label",
+                  { className: "block text-white mb-2 font-semibold" },
+                  "Your Name"
+                ),
+                h("input", {
+                  type: "text",
+                  value: playerName,
+                  onChange: (e) => setPlayerName(e.target.value),
+                  placeholder: "Enter your name",
+                  maxLength: 20,
+                  className:
+                    "w-full bg-slate-700 text-white px-4 py-3 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none",
+                })
+              ),
+              error &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm",
+                  },
+                  error
+                ),
+              h(
+                "button",
+                {
+                  onClick: createRoom,
+                  disabled: loading,
+                  className:
+                    "w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-blue-600 transition-all shadow-lg disabled:opacity-50",
+                },
+                loading ? "Creating..." : "Create Room"
+              ),
+              h(
+                "div",
+                { className: "relative" },
+                h(
+                  "div",
+                  { className: "absolute inset-0 flex items-center" },
+                  h("div", { className: "w-full border-t border-slate-600" })
+                ),
+                h(
+                  "div",
+                  { className: "relative flex justify-center text-sm" },
+                  h(
+                    "span",
+                    { className: "px-2 bg-slate-800 text-slate-400" },
+                    "OR"
+                  )
+                )
+              ),
+              h(
+                "div",
+                null,
+                h(
+                  "label",
+                  { className: "block text-white mb-2 font-semibold" },
+                  "Room Code"
+                ),
+                h("input", {
+                  type: "text",
+                  value: inputCode,
+                  onChange: (e) => setInputCode(e.target.value.toUpperCase()),
+                  placeholder: "Enter 5-character code",
+                  maxLength: 5,
+                  className:
+                    "w-full bg-slate-700 text-white px-4 py-3 rounded-lg border border-slate-600 focus:border-blue-500 focus:outline-none uppercase",
+                })
+              ),
+              h(
+                "button",
+                {
+                  onClick: joinRoom,
+                  disabled: loading,
+                  className:
+                    "w-full bg-slate-700 hover:bg-slate-600 text-white py-4 rounded-lg font-bold text-lg transition-all disabled:opacity-50",
+                },
+                loading ? "Joining..." : "Join Room"
+              )
+            )
           )
         );
       }
 
-      function GameScreen({ gameState, playerId, myRole, cutWire }) {
-        const currentPlayer = gameState.players[gameState.currentPlayer];
-        const isMyTurn = currentPlayer.id === playerId;
-        const myPlayer = gameState.players.find(p => p.id === playerId);
-        const [showRoleInfo, setShowRoleInfo] = useState(false);
+      // LobbyScreen Component
+      function LobbyScreen({
+        roomCode,
+        playerId,
+        gameState,
+        copied,
+        error,
+        copyRoomCode,
+        updatePlayerCount,
+        toggleReady,
+        startGame,
+        leaveRoom,
+      }) {
+        const [isLoading, setIsLoading] = useState(false);
+        const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
-        // Calculate progress
-        const defusingTotal = gameState.config.defusing;
-        const defusingFound = gameState.defusingFound || 0;
-        const cutsLeft = gameState.playerCount - (gameState.revealedInRound || 0);
+        const isHost = playerId === gameState.hostId;
+        const allReady =
+          gameState.players.every((p) => p.ready) &&
+          gameState.players.length === gameState.playerCount;
 
-        return h("div", { className: `min-h-screen ${myRole === 'sherlock' ? 'vignette-sherlock' : 'vignette-moriarty'}` },
-          // --- TOP HUD ---
-          h("div", { className: "fixed top-0 left-0 w-full z-40 bg-slate-900/80 border-b border-white/10 backdrop-blur-md p-4 flex justify-between items-center" },
-            h("div", { className: "flex items-center gap-4" },
-              h("div", { className: "h-3 w-32 bg-slate-800 rounded-full overflow-hidden border border-white/10" },
-                h("div", { className: "h-full bg-blue-500 transition-all duration-500", style: { width: `${(defusingFound/defusingTotal)*100}%`} })
+        const handleLeave = async () => {
+          if (isHost && !showLeaveConfirm) {
+            setShowLeaveConfirm(true);
+            return;
+          }
+          setIsLoading(true);
+          await leaveRoom();
+        };
+
+        const handleStartGame = async () => {
+          setIsLoading(true);
+          await startGame();
+          setIsLoading(false);
+        };
+
+        return h(
+          "div",
+          {
+            className:
+              "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+          },
+          h(
+            "div",
+            {
+              className:
+                "bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-2xl w-full border border-slate-700",
+            },
+            h(
+              "div",
+              { className: "text-center mb-6" },
+              h(
+                "h2",
+                { className: "text-3xl font-bold text-white mb-4" },
+                "Game Lobby"
               ),
-              h("span", { className: "text-xs font-bold text-blue-400" }, `${defusingFound}/${defusingTotal} DEFUSED`)
-            ),
-            h("div", { className: "flex flex-col items-center" },
-              h("span", { className: "text-[10px] text-slate-500 font-bold uppercase" }, "Round"),
-              h("span", { className: "text-2xl font-bold text-amber-500 leading-none" }, gameState.round)
-            ),
-            h("div", { className: "text-right" },
-              h("span", { className: "text-[10px] text-slate-500 font-bold uppercase block" }, "Cuts Left"),
-              h("span", { className: "text-xl font-bold text-red-500" }, cutsLeft)
-            )
-          ),
-
-          // --- ACTION BANNER ---
-          h("div", { className: "pt-24 px-4 max-w-4xl mx-auto" },
-            h("div", { className: `p-4 rounded-xl text-center border transition-all ${isMyTurn ? 'bg-amber-900/40 border-amber-500 animate-pulse' : 'bg-slate-800/40 border-slate-700'}` },
-              h("h2", { className: `text-lg font-bold ${isMyTurn ? 'text-amber-400' : 'text-slate-300'}` },
-                isMyTurn ? "✂️ YOUR TURN: SNIP A WIRE" : `WAITING FOR ${currentPlayer.name.toUpperCase()}...`
-              )
-            )
-          ),
-
-          // --- PLAYERS GRID ---
-          h("div", { className: "p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto pb-40" },
-            gameState.players.map((p) => {
-              const isTurn = p.id === currentPlayer.id;
-              const isMe = p.id === playerId;
-              const announcement = gameState.announcements ? gameState.announcements[p.id] : null;
-
-              return h("div", { key: p.id, className: `dossier-card rounded-2xl p-4 relative ${isTurn ? 'active-turn-glow' : ''}` },
-                // Header
-                h("div", { className: "flex justify-between items-start mb-4" },
-                  h("div", null,
-                    h("h3", { className: `font-bold ${isMe ? 'text-blue-400' : 'text-white'}` }, p.name + (isMe ? " (YOU)" : "")),
-                    isTurn && h("span", { className: "text-[10px] bg-amber-500 text-black px-1 font-bold" }, "ACTIVE")
+              h(
+                "div",
+                { className: "bg-slate-900 rounded-lg p-4 mb-4" },
+                h(
+                  "div",
+                  { className: "text-slate-400 text-sm mb-1" },
+                  "Room Code"
+                ),
+                h(
+                  "div",
+                  { className: "flex items-center justify-center gap-2" },
+                  h(
+                    "div",
+                    {
+                      className: "text-4xl font-bold text-white tracking-wider",
+                    },
+                    roomCode
                   ),
-                  announcement && h("div", { className: "bg-white/10 px-2 py-1 rounded text-[10px] border border-white/20" },
-                    h("span", { className: "text-blue-400 mr-2" }, `✂️ ${announcement.defusing}`),
-                    h("span", { className: "text-red-400" }, `💣 ${announcement.bomb}`)
+                  h(
+                    "button",
+                    {
+                      onClick: copyRoomCode,
+                      className:
+                        "p-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-all",
+                      title: "Copy code",
+                    },
+                    copied
+                      ? h(Check, { className: "w-5 h-5 text-green-400" })
+                      : h(Copy, { className: "w-5 h-5 text-slate-400" })
                   )
                 ),
-                // Wires Hand
-                h("div", { className: "flex justify-center" },
-                  p.wires.map(w => h(Wire, { key: w.id, wire: w, canCut: isMyTurn && !isMe, onCut: () => cutWire(p.id, w.id) }))
+                h(
+                  "div",
+                  { className: "text-slate-400 text-sm mt-2" },
+                  "Share this code with your friends!"
                 )
-              );
-            })
-          ),
-
-          // --- BOTTOM ROLE DOCK ---
-          h("div", { className: "fixed bottom-0 left-0 w-full p-4 bg-gradient-to-t from-slate-950 to-transparent flex justify-center pointer-events-none" },
-            h("div", { 
-              className: `pointer-events-auto cursor-pointer flex items-center gap-4 px-6 py-3 rounded-full border-2 bg-slate-900 transition-all hover:scale-105 shadow-2xl
-                ${myRole === 'sherlock' ? 'border-blue-500 shadow-blue-500/20' : 'border-red-500 shadow-red-500/20'}`,
-              onClick: () => setShowRoleInfo(!showRoleInfo)
-            },
-              myRole === 'sherlock' ? h(IconShield) : h(IconBomb),
-              h("div", null,
-                h("div", { className: "text-[10px] text-slate-400 font-bold uppercase leading-none" }, "Your Identity"),
-                h("div", { className: "text-sm font-bold tracking-widest" }, myRole.toUpperCase())
               )
-            )
-          ),
-
-          // --- ROLE HELP MODAL ---
-          showRoleInfo && h("div", { className: "fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm", onClick: () => setShowRoleInfo(false) },
-            h("div", { className: "bg-slate-900 border-2 border-white/20 p-8 rounded-3xl max-w-sm text-center shadow-2xl", onClick: e => e.stopPropagation() },
-              myRole === 'sherlock' ? h(IconShield) : h(IconBomb),
-              h("h2", { className: "text-2xl font-bold my-4 uppercase tracking-tighter" }, myRole),
-              h("p", { className: "text-slate-400 text-sm leading-relaxed mb-6" }, 
-                myRole === 'sherlock' 
-                  ? "You must collaborate with your agents to find all the defusing wires before time runs out. Be careful—Moriarty is hiding among you."
-                  : "You must prevent Sherlock from finding the wires. Lie about your hand to lead them to the bomb or stall until the end of Round 4."
+            ),
+            isHost &&
+              h(
+                "div",
+                { className: "mb-6" },
+                h(
+                  "label",
+                  { className: "block text-white mb-3 font-semibold" },
+                  h(Users, { className: "inline w-5 h-5 mr-2" }),
+                  "Number of Players"
+                ),
+                h(
+                  "div",
+                  { className: "grid grid-cols-5 gap-2" },
+                  [4, 5, 6, 7, 8].map((num) =>
+                    h(
+                      "button",
+                      {
+                        key: num,
+                        onClick: () => updatePlayerCount(num),
+                        className: `py-3 rounded-lg font-bold transition-all ${
+                          gameState.playerCount === num
+                            ? "bg-blue-500 text-white shadow-lg"
+                            : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                        }`,
+                      },
+                      num
+                    )
+                  )
+                ),
+                h(
+                  "div",
+                  {
+                    className:
+                      "bg-slate-900 rounded-lg p-3 mt-3 text-sm text-slate-300",
+                  },
+                  h(
+                    "div",
+                    { className: "flex justify-between" },
+                    h(
+                      "span",
+                      { className: "flex items-center" },
+                      h(Shield, {
+                        className: "w-4 h-4 mr-2 text-blue-400",
+                      }),
+                      "Sherlock:"
+                    ),
+                    h(
+                      "span",
+                      { className: "font-bold text-blue-400" },
+                      GAME_CONFIG[gameState.playerCount].sherlock
+                    )
+                  ),
+                  h(
+                    "div",
+                    { className: "flex justify-between mt-1" },
+                    h(
+                      "span",
+                      { className: "flex items-center" },
+                      h(Zap, { className: "w-4 h-4 mr-2 text-red-400" }),
+                      "Moriarty:"
+                    ),
+                    h(
+                      "span",
+                      { className: "font-bold text-red-400" },
+                      GAME_CONFIG[gameState.playerCount].moriarty
+                    )
+                  )
+                )
               ),
-              h("button", { className: "w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all", onClick: () => setShowRoleInfo(false) }, "UNDERSTOOD")
+            h(
+              "div",
+              { className: "mb-6" },
+              h(
+                "div",
+                { className: "flex justify-between items-center mb-3" },
+                h(
+                  "h3",
+                  { className: "text-white font-bold" },
+                  `Players (${gameState.players.length}/${gameState.playerCount})`
+                )
+              ),
+              h(
+                "div",
+                { className: "space-y-2" },
+                gameState.players.map((player) =>
+                  h(
+                    "div",
+                    {
+                      key: player.id,
+                      className:
+                        "bg-slate-700 rounded-lg p-3 flex justify-between items-center",
+                    },
+                    h(
+                      "div",
+                      { className: "flex items-center gap-2" },
+                      h("div", {
+                        className: `w-3 h-3 rounded-full ${
+                          player.ready ? "bg-green-400" : "bg-slate-500"
+                        }`,
+                      }),
+                      h(
+                        "span",
+                        { className: "text-white font-medium" },
+                        player.name
+                      ),
+                      player.id === gameState.hostId &&
+                        h(
+                          "span",
+                          {
+                            className:
+                              "text-xs bg-yellow-500 text-slate-900 px-2 py-1 rounded font-bold",
+                          },
+                          "HOST"
+                        ),
+                      player.id === playerId &&
+                        h(
+                          "span",
+                          {
+                            className:
+                              "text-xs bg-blue-500 text-white px-2 py-1 rounded font-bold",
+                          },
+                          "YOU"
+                        )
+                    ),
+                    h(
+                      "div",
+                      { className: "text-sm text-slate-400" },
+                      player.ready ? "✓ Ready" : "Not ready"
+                    )
+                  )
+                )
+              )
+            ),
+            error &&
+              h(
+                "div",
+                {
+                  className:
+                    "bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm mb-4",
+                },
+                error
+              ),
+
+            // Leave confirmation for host
+            showLeaveConfirm &&
+              isHost &&
+              h(
+                "div",
+                {
+                  className:
+                    "bg-orange-900/50 border border-orange-500 rounded-lg p-4 mb-4",
+                },
+                h(
+                  "p",
+                  { className: "text-orange-200 font-bold mb-2" },
+                  "⚠️ Are you sure?"
+                ),
+                h(
+                  "p",
+                  { className: "text-orange-300 text-sm mb-3" },
+                  "As the host, leaving will close the room for all players."
+                ),
+                h(
+                  "div",
+                  { className: "flex gap-2" },
+                  h(
+                    "button",
+                    {
+                      onClick: () => setShowLeaveConfirm(false),
+                      className:
+                        "flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-lg font-bold transition-all",
+                    },
+                    "Cancel"
+                  ),
+                  h(
+                    "button",
+                    {
+                      onClick: handleLeave,
+                      disabled: isLoading,
+                      className:
+                        "flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg font-bold transition-all disabled:opacity-50",
+                    },
+                    isLoading ? "Leaving..." : "Yes, Leave"
+                  )
+                )
+              ),
+
+            // Action buttons
+            !showLeaveConfirm &&
+              h(
+                "div",
+                { className: "flex gap-3" },
+                h(
+                  "button",
+                  {
+                    onClick: toggleReady,
+                    disabled: isLoading,
+                    className: `flex-1 py-3 rounded-lg font-bold transition-all ${
+                      gameState.players.find((p) => p.id === playerId)?.ready
+                        ? "bg-slate-600 hover:bg-slate-500 text-white"
+                        : "bg-green-600 hover:bg-green-500 text-white"
+                    } disabled:opacity-50`,
+                  },
+                  gameState.players.find((p) => p.id === playerId)?.ready
+                    ? "✓ Ready"
+                    : "🎮 Ready Up"
+                ),
+                isHost &&
+                  h(
+                    "button",
+                    {
+                      onClick: handleStartGame,
+                      disabled: !allReady || isLoading,
+                      className:
+                        "flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed",
+                    },
+                    isLoading ? "Starting..." : "🚀 Start Game"
+                  ),
+                h(
+                  "button",
+                  {
+                    onClick: handleLeave,
+                    disabled: isLoading,
+                    className:
+                      "px-6 bg-red-600 hover:bg-red-500 text-white py-3 rounded-lg font-bold transition-all disabled:opacity-50",
+                  },
+                  "🚪 Leave"
+                )
+              ),
+
+            // Helpful tips
+            h(
+              "div",
+              { className: "mt-6 text-center" },
+              !allReady &&
+                gameState.players.length === gameState.playerCount &&
+                h(
+                  "p",
+                  { className: "text-yellow-400 text-sm" },
+                  "💡 All players must be ready to start the game"
+                ),
+              gameState.players.length < gameState.playerCount &&
+                h(
+                  "p",
+                  { className: "text-slate-400 text-sm" },
+                  `👥 Waiting for ${
+                    gameState.playerCount - gameState.players.length
+                  } more player${
+                    gameState.playerCount - gameState.players.length > 1
+                      ? "s"
+                      : ""
+                  } to join...`
+                )
             )
           )
         );
       }
 
-      // ==========================================
-      // LOBBY, HOME & END SCREENS (RE-STYLING WHILE PRESERVING ALL LOGIC)
-      // ==========================================
+      // GameScreen Component
+      function GameScreen({
+        gameState,
+        playerId,
+        myRole,
+        selectedWire,
+        setSelectedWire,
+        gameLog,
+        showLog,
+        setShowLog,
+        cutWire,
+        showGameOverEffect,
+        gameOverType,
+      }) {
+        const [showMyCards, setShowMyCards] = useState(false);
+        const [defusingAnnounce, setDefusingAnnounce] = useState(0);
+        const [bombAnnounce, setBombAnnounce] = useState(0);
+        const [showAnnouncements, setShowAnnouncements] = useState(false);
+        const [showAnnouncementPopup, setShowAnnouncementPopup] =
+          useState(false);
+        const [popupExiting, setPopupExiting] = useState(false);
 
-      function HomeScreen({ playerName, setPlayerName, inputCode, setInputCode, error, loading, createRoom, joinRoom }) {
-        return h("div", { className: "min-h-screen flex items-center justify-center p-6" },
-          h("div", { className: "max-w-md w-full bg-slate-900 border border-white/10 p-8 rounded-3xl shadow-2xl" },
-            h("h1", { className: "text-4xl font-bold text-center mb-8 tracking-tighter" }, "TIME BOMB"),
-            h("div", { className: "space-y-4" },
-              h("input", { type: "text", placeholder: "PLAYER NAME", value: playerName, onChange: e => setPlayerName(e.target.value.toUpperCase()), className: "w-full bg-slate-800 border-none p-4 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none font-bold" }),
-              error && h("p", { className: "text-red-500 text-xs text-center" }, error),
-              h("button", { onClick: createRoom, disabled: loading, className: "w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold shadow-lg shadow-blue-600/20" }, "CREATE SECRET ROOM"),
-              h("div", { className: "flex items-center gap-4 py-2" }, h("hr", { className: "flex-1 opacity-10" }), h("span", { className: "text-[10px] text-slate-500" }, "OR"), h("hr", { className: "flex-1 opacity-10" })),
-              h("input", { type: "text", placeholder: "ROOM CODE", value: inputCode, onChange: e => setInputCode(e.target.value.toUpperCase()), className: "w-full bg-slate-800 border-none p-4 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none font-bold text-center tracking-[10px]" }),
-              h("button", { onClick: joinRoom, disabled: loading, className: "w-full bg-slate-700 hover:bg-slate-600 py-4 rounded-xl font-bold" }, "JOIN OPERATION")
+        // Round transition state
+        const [showRoundTransition, setShowRoundTransition] = useState(false);
+        const [transitionRound, setTransitionRound] = useState(1);
+        const [transitionExiting, setTransitionExiting] = useState(false);
+        const [lastSeenRound, setLastSeenRound] = useState(null);
+
+        // Detect round changes and show transition
+        useEffect(() => {
+          if (
+            gameState &&
+            gameState.round &&
+            lastSeenRound !== null &&
+            gameState.round > lastSeenRound
+          ) {
+            setTransitionRound(gameState.round);
+            setShowRoundTransition(true);
+            setTransitionExiting(false);
+
+            // Start exit animation after 1.5s
+            const exitTimer = setTimeout(() => {
+              setTransitionExiting(true);
+            }, 1500);
+
+            // Hide overlay after exit animation
+            const hideTimer = setTimeout(() => {
+              setShowRoundTransition(false);
+            }, 1800);
+
+            return () => {
+              clearTimeout(exitTimer);
+              clearTimeout(hideTimer);
+            };
+          }
+          if (gameState && gameState.round) {
+            setLastSeenRound(gameState.round);
+          }
+        }, [gameState?.round, lastSeenRound]);
+
+        // ADD SAFETY CHECKS HERE
+        if (!gameState || !gameState.players || !gameState.config) {
+          return h(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+            },
+            h(
+              "div",
+              { className: "text-white text-center" },
+              h("div", { className: "text-2xl mb-4" }, "⏳"),
+              h("div", null, "Loading game...")
             )
-          )
-        );
-      }
+          );
+        }
 
-      function LobbyScreen({ roomCode, playerId, gameState, updatePlayerCount, toggleReady, startGame }) {
+        const currentPlayerObj = gameState.players[gameState.currentPlayer];
+        if (!currentPlayerObj) {
+          return h(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+            },
+            h(
+              "div",
+              { className: "text-white text-center" },
+              h("div", { className: "text-2xl mb-4" }, "⏳"),
+              h("div", null, "Loading game...")
+            )
+          );
+        }
+
+        const isMyTurn = currentPlayerObj.id === playerId;
+        const myPlayer = gameState.players.find((p) => p.id === playerId);
         const isHost = playerId === gameState.hostId;
-        const me = gameState.players.find(p => p.id === playerId);
-        const allReady = gameState.players.length >= 4 && gameState.players.every(p => p.ready);
 
-        return h("div", { className: "min-h-screen p-6 max-w-2xl mx-auto" },
-          h("div", { className: "text-center mb-12" },
-            h("span", { className: "text-[10px] text-slate-500 font-bold uppercase" }, "Room Code"),
-            h("h2", { className: "text-5xl font-bold tracking-[15px] text-amber-500" }, roomCode)
-          ),
-          isHost && h("div", { className: "mb-8 bg-slate-900 p-6 rounded-2xl border border-white/10" },
-            h("p", { className: "text-xs font-bold text-slate-500 mb-4 uppercase" }, "Mission Parameters: Player Count"),
-            h("div", { className: "flex gap-2" }, [4,5,6,7,8].map(n => 
-              h("button", { key: n, onClick: () => updatePlayerCount(n), className: `flex-1 py-3 rounded-lg font-bold transition-all ${gameState.playerCount === n ? 'bg-blue-600' : 'bg-slate-800 text-slate-500'}` }, n)
-            ))
-          ),
-          h("div", { className: "space-y-3 mb-12" }, 
-            gameState.players.map(p => 
-              h("div", { key: p.id, className: "flex justify-between items-center bg-slate-900 p-4 rounded-xl border border-white/5" },
-                h("span", { className: "font-bold" }, p.name + (p.id === gameState.hostId ? " (HOST)" : "")),
-                h("span", { className: `text-[10px] font-bold px-2 py-1 rounded ${p.ready ? 'bg-green-500 text-black' : 'bg-slate-800 text-slate-500'}` }, p.ready ? "READY" : "WAITING")
+        // Count my actual cards
+        const myActualCards =
+          myPlayer && myPlayer.wires
+            ? {
+                defusing: myPlayer.wires.filter(
+                  (w) => w.type === "defusing" && !w.revealed
+                ).length,
+                bomb: myPlayer.wires.filter(
+                  (w) => w.type === "bomb" && !w.revealed
+                ).length,
+                safe: myPlayer.wires.filter(
+                  (w) => w.type === "safe" && !w.revealed
+                ).length,
+              }
+            : { defusing: 0, bomb: 0, safe: 0 };
+
+        // Check if current player has already announced this round
+        const myAnnouncement =
+          gameState.announcements && gameState.announcements[playerId];
+        const hasAnnouncedThisRound =
+          myAnnouncement &&
+          myAnnouncement.round === gameState.round &&
+          myAnnouncement.locked;
+
+        // Check if all players have announced this round
+        const allPlayersAnnounced = gameState.players.every((p) => {
+          const announcement =
+            gameState.announcements && gameState.announcements[p.id];
+          return (
+            announcement &&
+            announcement.round === gameState.round &&
+            announcement.locked
+          );
+        });
+
+        const announceCards = async () => {
+          if (hasAnnouncedThisRound) return; // Prevent re-announcement
+          try {
+            const announcements = gameState.announcements || {};
+            announcements[playerId] = {
+              name: myPlayer.name,
+              defusing: defusingAnnounce,
+              bomb: bombAnnounce,
+              round: gameState.round,
+              locked: true, // Mark as locked after submission
+            };
+            await database
+              .ref(`rooms/${gameState.code}/announcements`)
+              .set(announcements);
+          } catch (err) {
+            console.error("Failed to announce cards");
+          }
+        };
+
+        // Helper to close popup with animation
+        const closeAnnouncementPopup = () => {
+          setPopupExiting(true);
+          setTimeout(() => {
+            setShowAnnouncementPopup(false);
+            setPopupExiting(false);
+          }, 200);
+        };
+
+
+        // Team-based background gradient
+        const teamBackground =
+          myRole === "sherlock"
+            ? "from-slate-900 via-blue-950 to-slate-900"
+            : "from-slate-900 via-red-950 to-slate-900";
+
+        return h(
+          "div",
+          {
+            className: `min-h-screen bg-gradient-to-br ${teamBackground} p-4`,
+          },
+
+          // ANNOUNCEMENT POPUP MODAL
+          showAnnouncementPopup &&
+            h(
+              "div",
+              null,
+              // Backdrop
+              h("div", {
+                className: "announcement-backdrop",
+                onClick: closeAnnouncementPopup,
+              }),
+              // Popup
+              h(
+                "div",
+                {
+                  className: `announcement-popup ${
+                    popupExiting ? "announcement-popup-exit" : ""
+                  } bg-slate-800 rounded-2xl p-6 border-2 border-yellow-500 shadow-2xl w-[90%] max-w-md pulse-attention`,
+                },
+                h(
+                  "div",
+                  { className: "text-center mb-4" },
+                  h("div", { className: "text-4xl mb-2" }, "📢"),
+                  h(
+                    "h2",
+                    { className: "text-2xl font-bold text-white" },
+                    "Announce Your Cards"
+                  ),
+                  h(
+                    "p",
+                    { className: "text-yellow-400 text-sm mt-1" },
+                    "You can lie! Bluff your opponents."
+                  )
+                ),
+                // Card counts display
+                h(
+                  "div",
+                  { className: "bg-slate-900/50 rounded-lg p-3 mb-4" },
+                  h(
+                    "div",
+                    { className: "text-slate-400 text-xs mb-2 text-center" },
+                    "Your actual cards (only you can see this):"
+                  ),
+                  h(
+                    "div",
+                    { className: "flex justify-center gap-4 text-sm" },
+                    h(
+                      "span",
+                      { className: "text-blue-400" },
+                      `✂️ ${myActualCards.defusing}`
+                    ),
+                    h(
+                      "span",
+                      { className: "text-red-400" },
+                      `💣 ${myActualCards.bomb}`
+                    ),
+                    h(
+                      "span",
+                      { className: "text-slate-400" },
+                      `✓ ${myActualCards.safe}`
+                    )
+                  )
+                ),
+                // Announcement inputs
+                h(
+                  "div",
+                  { className: "grid grid-cols-2 gap-4 mb-4" },
+                  // Defusing announcer
+                  h(
+                    "div",
+                    {
+                      className:
+                        "bg-blue-900/40 rounded-xl p-4 border border-blue-700",
+                    },
+                    h(
+                      "div",
+                      {
+                        className:
+                          "text-blue-300 text-sm mb-3 text-center font-bold",
+                      },
+                      "✂️ Defusing"
+                    ),
+                    h(
+                      "div",
+                      { className: "flex items-center justify-center gap-3" },
+                      h(
+                        "button",
+                        {
+                          onClick: () =>
+                            setDefusingAnnounce(
+                              Math.max(0, defusingAnnounce - 1)
+                            ),
+                          className:
+                            "bg-blue-700 hover:bg-blue-600 text-white w-12 h-12 rounded-full font-bold text-2xl transition-all hover:scale-110",
+                        },
+                        "-"
+                      ),
+                      h(
+                        "div",
+                        {
+                          className:
+                            "text-4xl font-bold text-white w-14 text-center",
+                        },
+                        defusingAnnounce
+                      ),
+                      h(
+                        "button",
+                        {
+                          onClick: () =>
+                            setDefusingAnnounce(
+                              Math.min(5, defusingAnnounce + 1)
+                            ),
+                          className:
+                            "bg-blue-700 hover:bg-blue-600 text-white w-12 h-12 rounded-full font-bold text-2xl transition-all hover:scale-110",
+                        },
+                        "+"
+                      )
+                    )
+                  ),
+                  // Bomb announcer
+                  h(
+                    "div",
+                    {
+                      className:
+                        "bg-red-900/40 rounded-xl p-4 border border-red-700",
+                    },
+                    h(
+                      "div",
+                      {
+                        className:
+                          "text-red-300 text-sm mb-3 text-center font-bold",
+                      },
+                      "💣 Bomb"
+                    ),
+                    h(
+                      "div",
+                      { className: "flex items-center justify-center gap-3" },
+                      h(
+                        "button",
+                        {
+                          onClick: () =>
+                            setBombAnnounce(Math.max(0, bombAnnounce - 1)),
+                          className:
+                            "bg-red-700 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-2xl transition-all hover:scale-110",
+                        },
+                        "-"
+                      ),
+                      h(
+                        "div",
+                        {
+                          className:
+                            "text-4xl font-bold text-white w-14 text-center",
+                        },
+                        bombAnnounce
+                      ),
+                      h(
+                        "button",
+                        {
+                          onClick: () =>
+                            setBombAnnounce(Math.min(5, bombAnnounce + 1)),
+                          className:
+                            "bg-red-700 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-2xl transition-all hover:scale-110",
+                        },
+                        "+"
+                      )
+                    )
+                  )
+                ),
+                // Submit button
+                h(
+                  "button",
+                  {
+                    onClick: async () => {
+                      await announceCards();
+                      closeAnnouncementPopup();
+                    },
+                    className:
+                      "w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] shadow-lg",
+                  },
+                  "🔒 Lock In Announcement"
+                ),
+                // Cancel button
+                h(
+                  "button",
+                  {
+                    onClick: closeAnnouncementPopup,
+                    className:
+                      "w-full mt-2 bg-slate-700 hover:bg-slate-600 text-slate-300 py-2 rounded-lg text-sm transition-all",
+                  },
+                  "Cancel"
+                )
+              )
+            ),
+
+          // ROUND TRANSITION OVERLAY
+          showRoundTransition &&
+            h(
+              "div",
+              {
+                className: `fixed inset-0 z-50 flex items-center justify-center bg-black/80 ${
+                  transitionExiting
+                    ? "round-transition-exit"
+                    : "round-transition-enter"
+                }`,
+              },
+              h(
+                "div",
+                { className: "text-center" },
+                h(
+                  "div",
+                  {
+                    className:
+                      "text-slate-400 text-xl mb-2 round-number-animate",
+                  },
+                  transitionRound > 1
+                    ? `Round ${transitionRound - 1} Complete`
+                    : "Game Starting"
+                ),
+                h(
+                  "div",
+                  {
+                    className:
+                      "text-6xl md:text-8xl font-bold text-white mb-4 round-number-animate",
+                  },
+                  `Round ${transitionRound}`
+                ),
+                h(
+                  "div",
+                  { className: "text-yellow-400 text-lg round-number-animate" },
+                  "Cards have been redistributed!"
+                ),
+                h(
+                  "div",
+                  {
+                    className:
+                      "mt-4 text-slate-500 text-sm round-number-animate",
+                  },
+                  `${5 - transitionRound} round${
+                    5 - transitionRound !== 1 ? "s" : ""
+                  } remaining`
+                )
+              )
+            ),
+
+          h(
+            "div",
+            { className: "max-w-6xl mx-auto" },
+            h(
+              "div",
+              {
+                className:
+                  "bg-slate-800 rounded-xl p-4 mb-4 border border-slate-700",
+              },
+              h(
+                "div",
+                {
+                  className:
+                    "flex flex-wrap gap-4 justify-between items-center",
+                },
+                h(
+                  "div",
+                  { className: "flex items-center gap-4 flex-wrap" },
+                  h(
+                    "div",
+                    {
+                      className: `px-4 py-2 rounded-lg font-bold flex items-center ${
+                        myRole === "sherlock"
+                          ? "bg-blue-600 text-white"
+                          : "bg-red-600 text-white"
+                      }`,
+                    },
+                    myRole === "sherlock"
+                      ? h(Shield, { className: "w-4 h-4 mr-2" })
+                      : h(Zap, { className: "w-4 h-4 mr-2" }),
+                    h(
+                      "span",
+                      null,
+                      myRole === "sherlock" ? "Sherlock" : "Moriarty"
+                    )
+                  ),
+                  h(
+                    "div",
+                    { className: "text-white" },
+                    h("div", { className: "text-sm text-slate-400" }, "Round"),
+                    h(
+                      "div",
+                      { className: "text-2xl font-bold" },
+                      `${gameState.round}/4`
+                    )
+                  ),
+                  h(
+                    "div",
+                    { className: "text-white" },
+                    h(
+                      "div",
+                      { className: "text-sm text-slate-400" },
+                      "Defusing Wires"
+                    ),
+                    h(
+                      "div",
+                      { className: "text-2xl font-bold text-blue-400" },
+                      `${gameState.defusingFound}/${gameState.config.defusing}`
+                    )
+                  )
+                ),
+                h(
+                  "div",
+                  { className: "text-white text-right" },
+                  h(
+                    "div",
+                    { className: "text-sm text-slate-400" },
+                    "Current Turn"
+                  ),
+                  h(
+                    "div",
+                    { className: "text-xl font-bold" },
+                    currentPlayerObj.name
+                  ),
+                  isMyTurn &&
+                    h(
+                      "div",
+                      { className: "text-sm text-yellow-400" },
+                      "Your turn!"
+                    )
+                )
+              ),
+              h(
+                "div",
+                {
+                  className: `mt-4 p-3 rounded-lg ${
+                    myRole === "sherlock" ? "bg-blue-900/50" : "bg-red-900/50"
+                  }`,
+                },
+                h(
+                  "p",
+                  { className: "text-white text-sm" },
+                  myRole === "sherlock"
+                    ? `🎯 Find all ${gameState.config.defusing} Defusing wires to win. Avoid the Bomb!`
+                    : "💣 Cut the Bomb or survive 4 rounds to win. Mislead others!"
+                )
+              ),
+
+              // ANNOUNCEMENT STATUS BANNER
+              !allPlayersAnnounced &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "mt-4 bg-yellow-900/50 border border-yellow-600 rounded-lg p-4",
+                  },
+                  h(
+                    "div",
+                    {
+                      className:
+                        "flex flex-wrap items-center justify-between gap-3 mb-3",
+                    },
+                    h(
+                      "div",
+                      { className: "text-yellow-300 font-bold" },
+                      "⚠️ Waiting for all players to announce"
+                    ),
+                    !hasAnnouncedThisRound &&
+                      h(
+                        "button",
+                        {
+                          onClick: () => setShowAnnouncementPopup(true),
+                          className:
+                            "bg-yellow-600 hover:bg-yellow-500 text-slate-900 px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 pulse-attention",
+                        },
+                        "📢 Make Your Announcement"
+                      )
+                  ),
+                  h(
+                    "div",
+                    { className: "flex flex-wrap gap-2" },
+                    gameState.players.map((p) => {
+                      const pAnnouncement =
+                        gameState.announcements &&
+                        gameState.announcements[p.id];
+                      const pHasAnnounced =
+                        pAnnouncement &&
+                        pAnnouncement.round === gameState.round &&
+                        pAnnouncement.locked;
+                      return h(
+                        "span",
+                        {
+                          key: p.id,
+                          className: `px-2 py-1 rounded text-sm ${
+                            pHasAnnounced
+                              ? "bg-green-700 text-green-200"
+                              : "bg-slate-700 text-slate-400"
+                          }`,
+                        },
+                        pHasAnnounced ? `✓ ${p.name}` : `⏳ ${p.name}`
+                      );
+                    })
+                  )
+                ),
+
+              allPlayersAnnounced &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "mt-4 bg-green-900/50 border border-green-600 rounded-lg p-3",
+                  },
+                  h(
+                    "div",
+                    { className: "text-green-300 font-bold" },
+                    "✓ All players have announced - Wire cutting enabled!"
+                  )
+                ),
+
+              isHost &&
+                h(
+                  "button",
+                  {
+                    onClick: () => setShowLog(!showLog),
+                    className:
+                      "mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-all",
+                  },
+                  showLog ? "📜 Hide Game Log" : "📜 Show Game Log"
+                ),
+              showLog &&
+                gameLog.length > 0 &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "mt-4 bg-slate-900 rounded-lg p-3 max-h-40 overflow-y-auto",
+                  },
+                  gameLog
+                    .slice(-10)
+                    .reverse()
+                    .map((entry, idx) =>
+                      h(
+                        "div",
+                        {
+                          key: idx,
+                          className:
+                            "text-slate-300 text-xs py-1 border-b border-slate-800 last:border-0",
+                        },
+                        entry.message
+                      )
+                    )
+                )
+            ),
+            h(
+              "div",
+              {
+                className:
+                  "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+              },
+              gameState.players
+                .filter((player) => player.wires && Array.isArray(player.wires))
+                .map((player) => {
+                  const isCurrentPlayer = currentPlayerObj.id === player.id;
+                  const isMe = player.id === playerId;
+                  // Get player's announcement for current round
+                  const playerAnnouncement =
+                    gameState.announcements &&
+                    gameState.announcements[player.id];
+                  const hasPlayerAnnounced =
+                    playerAnnouncement &&
+                    playerAnnouncement.round === gameState.round &&
+                    playerAnnouncement.locked;
+                  return h(
+                    "div",
+                    {
+                      key: player.id,
+                      className: `bg-slate-800 rounded-xl p-4 border-2 transition-all ${
+                        isCurrentPlayer
+                          ? "border-yellow-400 shadow-lg shadow-yellow-400/20"
+                          : "border-slate-700"
+                      } ${isMe ? "ring-2 ring-blue-500" : ""}`,
+                    },
+                    h(
+                      "div",
+                      { className: "flex flex-col gap-2 mb-3" },
+                      // Player name row
+                      h(
+                        "div",
+                        { className: "flex justify-between items-center" },
+                        h(
+                          "h3",
+                          {
+                            className:
+                              "text-white font-bold text-lg truncate flex items-center",
+                          },
+                          player.name,
+                          isMe &&
+                            h(
+                              "span",
+                              { className: "text-xs ml-2 text-blue-400" },
+                              "(You)"
+                            ),
+                          isCurrentPlayer &&
+                            h(Scissors, {
+                              className: "inline w-5 h-5 ml-2 text-yellow-400",
+                            })
+                        ),
+                        h(
+                          "span",
+                          { className: "text-slate-400 text-sm" },
+                          `${
+                            player.wires.filter((w) => !w.revealed).length
+                          } wires`
+                        )
+                      ),
+                      // Announcement badge row
+                      hasPlayerAnnounced
+                        ? h(
+                            "div",
+                            { className: "flex items-center gap-2" },
+                            h(
+                              "span",
+                              {
+                                className:
+                                  "announcement-badge bg-blue-900/60 text-blue-300 border border-blue-700",
+                              },
+                              `✂️ ${playerAnnouncement.defusing}`
+                            ),
+                            h(
+                              "span",
+                              {
+                                className:
+                                  "announcement-badge bg-red-900/60 text-red-300 border border-red-700",
+                              },
+                              `💣 ${playerAnnouncement.bomb}`
+                            )
+                          )
+                        : h(
+                            "div",
+                            { className: "flex items-center" },
+                            h(
+                              "span",
+                              {
+                                className:
+                                  "announcement-badge bg-slate-700 text-slate-400",
+                              },
+                              "⏳ Not announced"
+                            )
+                          )
+                    ),
+                    h(
+                      "div",
+                      { className: "grid grid-cols-5 gap-2" },
+                      player.wires.map((wire) => {
+                        const canCut =
+                          isMyTurn &&
+                          !isMe &&
+                          !wire.revealed &&
+                          allPlayersAnnounced;
+                        const isSelected =
+                          selectedWire?.playerId === player.id &&
+                          selectedWire?.wireId === wire.id;
+                        return h(
+                          "button",
+                          {
+                            key: wire.id,
+                            onClick: () =>
+                              canCut &&
+                              setSelectedWire({
+                                playerId: player.id,
+                                wireId: wire.id,
+                              }),
+                            disabled: !canCut,
+                            className: `aspect-square rounded-lg transition-all text-xl ${
+                              wire.revealed
+                                ? wire.type === "bomb"
+                                  ? "bg-red-500 text-white"
+                                  : wire.type === "defusing"
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-slate-600 text-slate-400"
+                                : isSelected
+                                ? "bg-yellow-500 scale-110 shadow-lg cursor-pointer"
+                                : canCut
+                                ? "bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105"
+                                : "bg-slate-700 cursor-not-allowed opacity-50"
+                            }`,
+                          },
+                          wire.revealed
+                            ? wire.type === "bomb"
+                              ? "💣"
+                              : wire.type === "defusing"
+                              ? "✂️"
+                              : "✓"
+                            : "?"
+                        );
+                      })
+                    )
+                  );
+                })
+            ),
+            selectedWire &&
+              isMyTurn &&
+              h(
+                "div",
+                {
+                  className:
+                    "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+                },
+                h(
+                  "button",
+                  {
+                    onClick: () =>
+                      cutWire(selectedWire.playerId, selectedWire.wireId),
+                    className:
+                      "bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-all hover:scale-105",
+                  },
+                  h(Scissors, { className: "inline w-6 h-6 mr-2" }),
+                  "Cut Wire"
+                )
+              ),
+            h(
+              "div",
+              {
+                className:
+                  "mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700 mb-20",
+              },
+              h(
+                "h4",
+                { className: "text-white font-bold mb-3 flex items-center" },
+                h(AlertCircle, { className: "w-5 h-5 mr-2" }),
+                "Wire Types"
+              ),
+              h(
+                "div",
+                { className: "grid grid-cols-3 gap-4 text-sm" },
+                h(
+                  "div",
+                  { className: "flex items-center gap-2" },
+                  h(
+                    "div",
+                    {
+                      className:
+                        "w-8 h-8 bg-slate-600 rounded flex items-center justify-center text-slate-400",
+                    },
+                    "✓"
+                  ),
+                  h("span", { className: "text-slate-300" }, "Safe Wire")
+                ),
+                h(
+                  "div",
+                  { className: "flex items-center gap-2" },
+                  h(
+                    "div",
+                    {
+                      className:
+                        "w-8 h-8 bg-blue-500 rounded flex items-center justify-center",
+                    },
+                    "✂️"
+                  ),
+                  h("span", { className: "text-slate-300" }, "Defusing Wire")
+                ),
+                h(
+                  "div",
+                  { className: "flex items-center gap-2" },
+                  h(
+                    "div",
+                    {
+                      className:
+                        "w-8 h-8 bg-red-500 rounded flex items-center justify-center",
+                    },
+                    "💣"
+                  ),
+                  h("span", { className: "text-slate-300" }, "Bomb")
+                )
               )
             )
           ),
-          h("div", { className: "fixed bottom-0 left-0 w-full p-6 flex gap-4 bg-gradient-to-t from-slate-950" },
-            h("button", { onClick: toggleReady, className: `flex-1 py-4 rounded-2xl font-bold transition-all ${me.ready ? 'bg-slate-700' : 'bg-green-600 hover:bg-green-500'}` }, me.ready ? "CANCEL READY" : "READY UP"),
-            isHost && h("button", { onClick: startGame, disabled: !allReady, className: "flex-1 bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold disabled:opacity-30 disabled:grayscale" }, "INITIATE GAME")
-          )
+
+          // GAME OVER EFFECT OVERLAY
+          showGameOverEffect &&
+            h(
+              "div",
+              {
+                className: `fixed inset-0 z-50 flex items-center justify-center ${
+                  gameOverType === "bomb"
+                    ? "explosion-overlay"
+                    : "victory-overlay"
+                }`,
+              },
+              h(
+                "div",
+                { className: "text-center" },
+                gameOverType === "bomb"
+                  ? h(
+                      "div",
+                      null,
+                      h("div", { className: "text-8xl bomb-explode" }, "💣"),
+                      h(
+                        "div",
+                        {
+                          className:
+                            "text-4xl md:text-6xl font-bold text-red-500 mt-8 screen-shake",
+                        },
+                        "BOOM!"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-xl text-orange-400 mt-4" },
+                        "The bomb exploded!"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-lg text-red-300 mt-2" },
+                        "Big Ben has been destroyed..."
+                      )
+                    )
+                  : h(
+                      "div",
+                      null,
+                      h("div", { className: "text-8xl defuse-success" }, "✂️"),
+                      h(
+                        "div",
+                        {
+                          className:
+                            "text-4xl md:text-6xl font-bold text-blue-400 mt-8",
+                        },
+                        "DEFUSED!"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-xl text-green-400 mt-4" },
+                        "All wires have been cut!"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-lg text-blue-300 mt-2" },
+                        "London is saved!"
+                      )
+                    )
+              )
+            )
         );
       }
 
-      function EndScreen({ gameState, myRole, playerId, playAgain, leaveRoom }) {
-        const win = gameState.winner === myRole;
-        return h("div", { className: "min-h-screen flex items-center justify-center p-6 text-center" },
-          h("div", null,
-            h("h1", { className: `text-6xl font-bold mb-2 tracking-tighter ${win ? 'text-green-500' : 'text-red-500'}` }, win ? "VICTORY" : "DEFEAT"),
-            h("p", { className: "text-slate-400 mb-8 font-bold" }, gameState.winner === 'sherlock' ? "The bomb was defused." : "London has fallen."),
-            h("div", { className: "flex gap-4 justify-center" },
-              playerId === gameState.hostId && h("button", { onClick: playAgain, className: "px-8 py-4 bg-blue-600 rounded-xl font-bold" }, "PLAY AGAIN"),
-              h("button", { onClick: leaveRoom, className: "px-8 py-4 bg-slate-800 rounded-xl font-bold" }, "EXIT")
+      // EndScreen Component
+      function EndScreen({
+        gameState,
+        myRole,
+        playerId,
+        playAgain,
+        leaveRoom,
+        error,
+        roomCode,
+      }) {
+        const [isLoading, setIsLoading] = useState(false);
+        const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+
+        const isWinner =
+          (gameState.winner === "sherlock" && myRole === "sherlock") ||
+          (gameState.winner === "moriarty" && myRole === "moriarty");
+        const isHost = playerId === gameState.hostId;
+
+        const handlePlayAgain = async () => {
+          setIsLoading(true);
+          await playAgain();
+          setIsLoading(false);
+        };
+
+        const handleLeave = async () => {
+          if (isHost && !showLeaveConfirm) {
+            setShowLeaveConfirm(true);
+            return;
+          }
+          setIsLoading(true);
+          await leaveRoom();
+        };
+
+        return h(
+          "div",
+          {
+            className:
+              "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+          },
+          h(
+            "div",
+            {
+              className:
+                "bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-md w-full border border-slate-700 text-center",
+            },
+            h(
+              "div",
+              { className: "mb-6" },
+              gameState.winner === "sherlock"
+                ? h(Shield, {
+                    className:
+                      "w-20 h-20 mx-auto text-blue-400 mb-4 animate-pulse",
+                  })
+                : h(Zap, {
+                    className:
+                      "w-20 h-20 mx-auto text-red-400 mb-4 animate-pulse",
+                  })
+            ),
+            h(
+              "h2",
+              { className: "text-3xl font-bold text-white mb-4" },
+              gameState.winner === "sherlock"
+                ? "Bomb Defused!"
+                : "Big Ben Destroyed!"
+            ),
+            h(
+              "p",
+              { className: "text-xl mb-6 text-slate-300" },
+              h(
+                "span",
+                {
+                  className: `font-bold ${
+                    gameState.winner === "sherlock"
+                      ? "text-blue-400"
+                      : "text-red-400"
+                  }`,
+                },
+                gameState.winner === "sherlock"
+                  ? "Sherlock's Team Wins!"
+                  : "Moriarty's Team Wins!"
+              )
+            ),
+            h(
+              "div",
+              { className: "bg-slate-900 rounded-lg p-4 mb-6" },
+              h(
+                "p",
+                {
+                  className: `text-lg font-bold ${
+                    isWinner ? "text-green-400" : "text-orange-400"
+                  }`,
+                },
+                isWinner ? "🎉 You Won!" : "😔 You Lost"
+              ),
+              h(
+                "p",
+                { className: "text-slate-400 mt-2" },
+                `You were on ${
+                  myRole === "sherlock" ? "Sherlock's" : "Moriarty's"
+                } team`
+              )
+            ),
+            h(
+              "div",
+              { className: "space-y-4" },
+              h(
+                "div",
+                { className: "bg-slate-900 rounded-lg p-4 text-left" },
+                h(
+                  "h3",
+                  { className: "font-bold text-white mb-2" },
+                  "Team Roles:"
+                ),
+                gameState.players.map((p) =>
+                  h(
+                    "div",
+                    {
+                      key: p.id,
+                      className: "flex justify-between text-sm py-1",
+                    },
+                    h("span", { className: "text-slate-300" }, `${p.name}:`),
+                    h(
+                      "span",
+                      {
+                        className:
+                          p.role === "sherlock"
+                            ? "text-blue-400"
+                            : "text-red-400",
+                      },
+                      p.role === "sherlock" ? "Sherlock" : "Moriarty"
+                    )
+                  )
+                )
+              ),
+              // Room code display
+              h(
+                "div",
+                { className: "bg-slate-700/50 rounded-lg p-3 mb-4" },
+                h("span", { className: "text-slate-400 text-sm" }, "Room: "),
+                h(
+                  "span",
+                  { className: "text-white font-mono font-bold" },
+                  roomCode
+                )
+              ),
+
+              // Error display
+              error &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm mb-4",
+                  },
+                  error
+                ),
+
+              // Leave confirmation for host
+              showLeaveConfirm &&
+                isHost &&
+                h(
+                  "div",
+                  {
+                    className:
+                      "bg-orange-900/50 border border-orange-500 rounded-lg p-4 mb-4",
+                  },
+                  h(
+                    "p",
+                    { className: "text-orange-200 font-bold mb-2" },
+                    "⚠️ Are you sure?"
+                  ),
+                  h(
+                    "p",
+                    { className: "text-orange-300 text-sm mb-3" },
+                    "As the host, leaving will close the room for all players."
+                  ),
+                  h(
+                    "div",
+                    { className: "flex gap-2" },
+                    h(
+                      "button",
+                      {
+                        onClick: () => setShowLeaveConfirm(false),
+                        className:
+                          "flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-lg font-bold transition-all",
+                      },
+                      "Cancel"
+                    ),
+                    h(
+                      "button",
+                      {
+                        onClick: handleLeave,
+                        disabled: isLoading,
+                        className:
+                          "flex-1 bg-red-600 hover:bg-red-500 text-white py-2 rounded-lg font-bold transition-all disabled:opacity-50",
+                      },
+                      isLoading ? "Leaving..." : "Yes, Leave"
+                    )
+                  )
+                ),
+
+              // Action buttons
+              !showLeaveConfirm &&
+                h(
+                  "div",
+                  { className: "flex gap-2" },
+                  isHost &&
+                    h(
+                      "button",
+                      {
+                        onClick: handlePlayAgain,
+                        disabled: isLoading,
+                        className:
+                          "flex-1 bg-gradient-to-r from-green-600 to-green-500 text-white py-4 rounded-lg font-bold hover:from-green-700 hover:to-green-600 transition-all disabled:opacity-50",
+                      },
+                      isLoading ? "Starting..." : "🔄 Play Again"
+                    ),
+                  h(
+                    "button",
+                    {
+                      onClick: handleLeave,
+                      disabled: isLoading,
+                      className: `${
+                        isHost ? "flex-1" : "w-full"
+                      } bg-gradient-to-r from-blue-600 to-blue-500 text-white py-4 rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition-all disabled:opacity-50`,
+                    },
+                    isLoading ? "Leaving..." : "🚪 Leave Room"
+                  )
+                ),
+              !isHost &&
+                h(
+                  "p",
+                  { className: "text-slate-400 text-sm mt-3" },
+                  "💡 Waiting for host to start a new game..."
+                )
             )
           )
         );
       }
 
       // ==========================================
-      // MAIN APP LOGIC (PRESERVED & INTEGRATED)
+      // MAIN APP
       // ==========================================
-
-      function TimeBombApp() {
+      function TimeBombGame() {
         const [screen, setScreen] = useState("home");
-        const [playerName, setPlayerName] = useState("");
         const [roomCode, setRoomCode] = useState("");
         const [inputCode, setInputCode] = useState("");
         const [playerId, setPlayerId] = useState(null);
+        const [playerName, setPlayerName] = useState("");
         const [gameState, setGameState] = useState(null);
         const [myRole, setMyRole] = useState(null);
+        const [selectedWire, setSelectedWire] = useState(null);
+        const [copied, setCopied] = useState(false);
         const [error, setError] = useState("");
         const [loading, setLoading] = useState(false);
+        const [gameLog, setGameLog] = useState([]);
+        const [showLog, setShowLog] = useState(false);
 
-        // Firebase Sync
+        // Game over effect state (managed here for cutWire access)
+        const [showGameOverEffect, setShowGameOverEffect] = useState(false);
+        const [gameOverType, setGameOverType] = useState(null); // 'bomb' or 'defused'
+
         useEffect(() => {
           if (!roomCode) return;
-          const ref = database.ref(`rooms/${roomCode}`);
-          ref.on("value", (snap) => {
-            const data = snap.val();
-            if (!data) return;
-            setGameState(data);
-            if (data.status === "lobby") setScreen("lobby");
-            if (data.status === "playing") {
-              setScreen("game");
-              const me = data.players.find(p => p.id === playerId);
-              if (me) setMyRole(me.role);
+          const roomRef = database.ref(`rooms/${roomCode}`);
+          const handleUpdate = (snapshot) => {
+            const state = snapshot.val();
+            if (state) {
+              setGameState(state);
+              if (state.log) setGameLog(state.log);
+
+              // Check if current player was removed from the game
+              const playerStillInGame =
+                state.players && state.players.some((p) => p.id === playerId);
+              if (!playerStillInGame && playerId !== null) {
+                // Player was removed, go back to home
+                setScreen("home");
+                setRoomCode("");
+                setPlayerId(null);
+                setGameState(null);
+                setMyRole(null);
+                setError("You were removed from the room.");
+                return;
+              }
+
+              if (state.status === "lobby" && screen !== "lobby")
+                setScreen("lobby");
+              else if (state.status === "playing" && screen !== "game") {
+                setScreen("game");
+                if (!myRole && playerId !== null) {
+                  const player = state.players.find((p) => p.id === playerId);
+                  if (player) setMyRole(player.role);
+                }
+              } else if (state.status === "ended" && screen !== "end")
+                setScreen("end");
+            } else {
+              // Room was deleted (host left)
+              if (screen !== "home") {
+                setScreen("home");
+                setRoomCode("");
+                setPlayerId(null);
+                setGameState(null);
+                setMyRole(null);
+                setError("The room was closed by the host.");
+              }
             }
-            if (data.status === "ended") setScreen("end");
-          });
-          return () => ref.off();
-        }, [roomCode, playerId]);
+          };
+          roomRef.on("value", handleUpdate);
+          return () => roomRef.off("value", handleUpdate);
+        }, [roomCode, playerId, myRole, screen]);
 
         const createRoom = async () => {
-          if (!playerName) return setError("NAME REQUIRED");
+          if (!playerName.trim()) {
+            setError("Please enter your name");
+            return;
+          }
           setLoading(true);
-          const code = Math.random().toString(36).substring(2, 7).toUpperCase();
-          const initial = {
-            code, status: "lobby", hostId: 0, playerCount: 5,
-            players: [{ id: 0, name: playerName, ready: false }],
-            createdAt: Date.now()
+          setError("");
+          const code = generateRoomCode();
+          const newPlayerId = 0;
+          const initialState = {
+            code,
+            status: "lobby",
+            hostId: newPlayerId,
+            playerCount: 5,
+            players: [
+              { id: newPlayerId, name: playerName.trim(), ready: false },
+            ],
+            createdAt: Date.now(),
           };
-          await database.ref(`rooms/${code}`).set(initial);
-          setPlayerId(0); setRoomCode(code); setLoading(false);
+          try {
+            await database.ref(`rooms/${code}`).set(initialState);
+            setRoomCode(code);
+            setPlayerId(newPlayerId);
+            setGameState(initialState);
+            setScreen("lobby");
+          } catch (err) {
+            console.error("Create room error:", err);
+            setError("Failed to create room. Please try again.");
+          } finally {
+            setLoading(false);
+          }
         };
 
         const joinRoom = async () => {
-          if (!playerName || !inputCode) return setError("NAME & CODE REQUIRED");
+          if (!playerName.trim()) {
+            setError("Please enter your name");
+            return;
+          }
+          if (!inputCode.trim()) {
+            setError("Please enter a room code");
+            return;
+          }
           setLoading(true);
-          const snap = await database.ref(`rooms/${inputCode}`).once("value");
-          if (!snap.exists()) { setLoading(false); return setError("ROOM NOT FOUND"); }
-          const data = snap.val();
-          if (data.status !== "lobby") { setLoading(false); return setError("GAME IN PROGRESS"); }
-          const nextId = Math.max(...data.players.map(p => p.id)) + 1;
-          const newPlayers = [...data.players, { id: nextId, name: playerName, ready: false }];
-          await database.ref(`rooms/${inputCode}/players`).set(newPlayers);
-          setPlayerId(nextId); setRoomCode(inputCode); setLoading(false);
+          setError("");
+          const code = inputCode.trim().toUpperCase();
+          try {
+            const snapshot = await database.ref(`rooms/${code}`).once("value");
+            if (!snapshot.exists()) {
+              setError("Room not found");
+              setLoading(false);
+              return;
+            }
+            const state = snapshot.val();
+            if (state.status !== "lobby") {
+              setError("Game already started");
+              setLoading(false);
+              return;
+            }
+            if (state.players.length >= state.playerCount) {
+              setError("Room is full");
+              setLoading(false);
+              return;
+            }
+            const newPlayerId = Math.max(...state.players.map((p) => p.id)) + 1;
+            state.players.push({
+              id: newPlayerId,
+              name: playerName.trim(),
+              ready: false,
+            });
+            await database.ref(`rooms/${code}`).set(state);
+            setRoomCode(code);
+            setPlayerId(newPlayerId);
+            setGameState(state);
+            setScreen("lobby");
+          } catch (err) {
+            console.error("Join room error:", err);
+            setError("Failed to join room. Please try again.");
+          } finally {
+            setLoading(false);
+          }
         };
 
-        const updatePlayerCount = (n) => database.ref(`rooms/${roomCode}/playerCount`).set(n);
-        
-        const toggleReady = () => {
-          const idx = gameState.players.findIndex(p => p.id === playerId);
-          database.ref(`rooms/${roomCode}/players/${idx}/ready`).set(!gameState.players[idx].ready);
+        const updatePlayerCount = async (count) => {
+          if (playerId !== gameState.hostId) return;
+          try {
+            await database.ref(`rooms/${roomCode}/playerCount`).set(count);
+          } catch (err) {
+            console.error("Failed to update player count");
+          }
+        };
+
+        const toggleReady = async () => {
+          const playerIndex = gameState.players.findIndex(
+            (p) => p.id === playerId
+          );
+          if (playerIndex === -1) return;
+          try {
+            await database
+              .ref(`rooms/${roomCode}/players/${playerIndex}/ready`)
+              .set(!gameState.players[playerIndex].ready);
+          } catch (err) {
+            console.error("Failed to toggle ready");
+          }
         };
 
         const startGame = async () => {
+          if (playerId !== gameState.hostId) return;
+          if (gameState.players.length < 4) {
+            setError("Need at least 4 players to start");
+            return;
+          }
+          if (gameState.players.length !== gameState.playerCount) {
+            setError(`Waiting for ${gameState.playerCount} players`);
+            return;
+          }
           const config = GAME_CONFIG[gameState.playerCount];
-          const roles = [...Array(config.sherlock).fill("sherlock"), ...Array(config.moriarty).fill("moriarty")].sort(() => Math.random() - 0.5);
-          const wires = [...Array(config.defusing).fill("defusing"), ...Array(config.bomb).fill("bomb"), ...Array(config.wires).fill("safe")].sort(() => Math.random() - 0.5);
-          
-          const players = gameState.players.map((p, i) => ({
-            ...p, role: roles[i],
-            wires: wires.slice(i*5, (i+1)*5).map((t, wi) => ({ id: `${p.id}-${wi}`, type: t, revealed: false }))
-          }));
+          const roles = [
+            ...Array(config.sherlock).fill("sherlock"),
+            ...Array(config.moriarty).fill("moriarty"),
+          ].sort(() => Math.random() - 0.5);
+          const wireDeck = [
+            ...Array(config.defusing).fill("defusing"),
+            ...Array(config.bomb).fill("bomb"),
+            ...Array(config.wires).fill("safe"),
+          ].sort(() => Math.random() - 0.5);
+          const playersWithRoles = gameState.players.map((player, idx) => ({
+            ...player,
+            role: roles[idx],
+            wires: wireDeck
+              .slice(idx * 5, (idx + 1) * 5)
+              .map((type, wireIdx) => ({
+                id: `${player.id}-0-${wireIdx}`,
+                type,
+                revealed: false,
+              })),
+          }));          
 
-          await database.ref(`rooms/${roomCode}`).update({
-            status: "playing", players, config, round: 1, defusingFound: 0, revealedInRound: 0,
-            currentPlayer: Math.floor(Math.random() * players.length)
-          });
-        };
+          const getRandomIntegerInclusive = (max) => {
+            min = Math.ceil(0)
+            max = Math.floor(max)
 
-        const cutWire = async (targetId, wireId) => {
-          const newState = JSON.parse(JSON.stringify(gameState));
-          const target = newState.players.find(p => p.id === targetId);
-          const wire = target.wires.find(w => w.id === wireId);
-          
-          wire.revealed = true;
-          if (wire.type === 'bomb') { newState.status = 'ended'; newState.winner = 'moriarty'; }
-          else if (wire.type === 'defusing') {
-            newState.defusingFound++;
-            if (newState.defusingFound === newState.config.defusing) { newState.status = 'ended'; newState.winner = 'sherlock'; }
+            return Math.floor(Math.random() * (max - min + 1)) + min
           }
 
-          if (newState.status === 'playing') {
-            newState.revealedInRound++;
-            newState.currentPlayer = newState.players.findIndex(p => p.id === targetId);
-            
+          const newState = {
+            ...gameState,
+            status: "playing",
+            players: playersWithRoles,
+            currentPlayer: getRandomIntegerInclusive(gameState.players.length),
+            round: 1,
+            revealedInRound: 0,
+            defusingFound: 0,
+            config,
+            log: [{ message: "🎮 Game started!", timestamp: Date.now() }],
+          };
+          try {
+            await database.ref(`rooms/${roomCode}`).set(newState);
+            const me = playersWithRoles.find((p) => p.id === playerId);
+            if (me) setMyRole(me.role);
+            setScreen("game");
+          } catch (err) {
+            console.error("Start game error:", err);
+            setError("Failed to start game");
+          }
+        };
+
+        const cutWire = async (targetPlayerId, wireId) => {
+          if (gameState.players[gameState.currentPlayer].id !== playerId)
+            return;
+          if (targetPlayerId === playerId) return;
+
+          // Enforce announcement requirement at game-state level
+          const allAnnounced = gameState.players.every((p) => {
+            const announcement =
+              gameState.announcements && gameState.announcements[p.id];
+            return (
+              announcement &&
+              announcement.round === gameState.round &&
+              announcement.locked
+            );
+          });
+          if (!allAnnounced) {
+            console.error("Cannot cut wire: not all players have announced");
+            return;
+          }
+
+          // Track if game will end for local effect
+          let willEndGame = false;
+          let endType = null;
+
+          const newState = JSON.parse(JSON.stringify(gameState));
+          const targetPlayer = newState.players.find(
+            (p) => p.id === targetPlayerId
+          );
+          const currentPlayer = newState.players.find((p) => p.id === playerId);
+          const wire = targetPlayer.wires.find((w) => w.id === wireId);
+          if (wire.revealed) return;
+          wire.revealed = true;
+          const log = newState.log || [];
+          let logMessage = `${currentPlayer.name} cut ${targetPlayer.name}'s wire: `;
+          if (wire.type === "bomb") {
+            logMessage += "💣 BOMB!";
+            newState.status = "ended";
+            newState.winner = "moriarty";
+            willEndGame = true;
+            endType = "bomb";
+            log.push({ message: logMessage, timestamp: Date.now() });
+            log.push({
+              message: "💥 Big Ben destroyed! Moriarty wins!",
+              timestamp: Date.now(),
+            });
+          } else if (wire.type === "defusing") {
+            newState.defusingFound += 1;
+            logMessage += `✂️ Defusing (${newState.defusingFound}/${newState.config.defusing})`;
+            log.push({ message: logMessage, timestamp: Date.now() });
+            if (newState.defusingFound === newState.config.defusing) {
+              newState.status = "ended";
+              newState.winner = "sherlock";
+              willEndGame = true;
+              endType = "defused";
+              log.push({
+                message: "🎉 All defusing wires found! Sherlock wins!",
+                timestamp: Date.now(),
+              });
+            }
+          } else {
+            logMessage += "✓ Safe wire";
+            log.push({ message: logMessage, timestamp: Date.now() });
+          }
+          newState.log = log;
+          if (newState.status !== "ended") {
+            newState.revealedInRound += 1;
             if (newState.revealedInRound === newState.playerCount) {
-              if (newState.round === 4) { newState.status = 'ended'; newState.winner = 'moriarty'; }
-              else {
-                // Shuffle unrevealed wires
-                const remaining = newState.players.flatMap(p => p.wires.filter(w => !w.revealed).map(w => w.type)).sort(() => Math.random() - 0.5);
-                const perPlayer = remaining.length / newState.playerCount;
-                newState.players.forEach((p, i) => {
-                  p.wires = remaining.slice(i * perPlayer, (i + 1) * perPlayer).map((t, wi) => ({ id: `${p.id}-${newState.round}-${wi}`, type: t, revealed: false }));
+              if (newState.round === 4) {
+                newState.status = "ended";
+                newState.winner = "moriarty";
+                willEndGame = true;
+                endType = "bomb"; // Time ran out - Moriarty wins
+                log.push({
+                  message: "⏰ 4 rounds completed. Moriarty wins!",
+                  timestamp: Date.now(),
                 });
-                newState.round++;
+              } else {
+                const unrevealedWires = newState.players
+                  .flatMap((p) =>
+                    p.wires.filter((w) => !w.revealed).map((w) => w.type)
+                  )
+                  .sort(() => Math.random() - 0.5);
+                const wiresPerPlayer = Math.floor(
+                  unrevealedWires.length / newState.playerCount
+                );
+                newState.players = newState.players.map((player, idx) => ({
+                  ...player,
+                  wires: unrevealedWires
+                    .slice(idx * wiresPerPlayer, (idx + 1) * wiresPerPlayer)
+                    .map((type, wireIdx) => ({
+                      id: `${player.id}-${newState.round}-${wireIdx}`,
+                      type,
+                      revealed: false,
+                    })),
+                }));
+                newState.round += 1;
                 newState.revealedInRound = 0;
-                newState.announcements = {};
+                log.push({
+                  message: `🔄 Round ${newState.round} started!`,
+                  timestamp: Date.now(),
+                });
               }
+            } else {
+              const currentPlayerIndex = newState.players.findIndex(
+                (p) => p.id === targetPlayerId
+              );
+              newState.currentPlayer = currentPlayerIndex;
             }
           }
-          await database.ref(`rooms/${roomCode}`).set(newState);
+          try {
+            // If game is ending, show effect first then update database
+            if (willEndGame) {
+              setGameOverType(endType);
+              setShowGameOverEffect(true);
+              setSelectedWire(null);
+
+              // Delay the database update to allow effect to show
+              setTimeout(async () => {
+                await database.ref(`rooms/${roomCode}`).set(newState);
+              }, 2000);
+            } else {
+              await database.ref(`rooms/${roomCode}`).set(newState);
+              setSelectedWire(null);
+            }
+          } catch (err) {
+            console.error("Cut wire error:", err);
+          }
         };
 
-        if (screen === "home") return h(HomeScreen, { playerName, setPlayerName, inputCode, setInputCode, error, loading, createRoom, joinRoom });
-        if (screen === "lobby") return h(LobbyScreen, { roomCode, playerId, gameState, updatePlayerCount, toggleReady, startGame });
-        if (screen === "game") return h(GameScreen, { gameState, playerId, myRole, cutWire });
-        if (screen === "end") return h(EndScreen, { gameState, myRole, playerId, playAgain: startGame, leaveRoom: () => location.reload() });
+        const copyRoomCode = () => {
+          navigator.clipboard.writeText(roomCode);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        };
+
+        const leaveRoom = async () => {
+          try {
+            if (gameState && roomCode) {
+              const isHost = playerId === gameState.hostId;
+
+              if (isHost) {
+                // Host leaves: delete the entire room
+                await database.ref(`rooms/${roomCode}`).remove();
+              } else {
+                // Non-host leaves: remove player from the room
+                const updatedPlayers = gameState.players.filter(
+                  (p) => p.id !== playerId
+                );
+                if (updatedPlayers.length > 0) {
+                  await database
+                    .ref(`rooms/${roomCode}/players`)
+                    .set(updatedPlayers);
+                } else {
+                  // No players left, delete room
+                  await database.ref(`rooms/${roomCode}`).remove();
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Leave room error:", err);
+          }
+
+          // Reset local state
+          setScreen("home");
+          setRoomCode("");
+          setPlayerId(null);
+          setGameState(null);
+          setMyRole(null);
+          setInputCode("");
+          setError("");
+          setGameLog([]);
+          setShowGameOverEffect(false);
+          setGameOverType(null);
+        };
+
+        const playAgain = async () => {
+          if (playerId !== gameState.hostId) return;
+
+          // Reset game-over effects immediately
+          setShowGameOverEffect(false);
+          setGameOverType(null);
+
+          const newState = {
+            code: roomCode,
+            status: "lobby",
+            hostId: gameState.hostId,
+            playerCount: gameState.playerCount,
+            players: gameState.players.map((p) => ({
+              id: p.id,
+              name: p.name,
+              ready: false,
+            })),
+            createdAt: Date.now(),
+            // Explicitly remove game-specific fields
+            announcements: null,
+            currentPlayer: null,
+            round: null,
+            revealedInRound: null,
+            defusingFound: null,
+            config: null,
+            winner: null,
+            log: null,
+          };
+
+          try {
+            await database.ref(`rooms/${roomCode}`).set(newState);
+            setMyRole(null);
+            setGameLog([]);
+            setSelectedWire(null);
+            setScreen("lobby");
+          } catch (err) {
+            console.error("Play again error:", err);
+            setError("Failed to restart game. Please try again.");
+          }
+        };
+
+        if (screen === "home") {
+          return h(HomeScreen, {
+            playerName,
+            setPlayerName,
+            inputCode,
+            setInputCode,
+            error,
+            loading,
+            createRoom,
+            joinRoom,
+          });
+        }
+        if (screen === "lobby") {
+          return h(LobbyScreen, {
+            roomCode,
+            playerId,
+            gameState,
+            copied,
+            error,
+            copyRoomCode,
+            updatePlayerCount,
+            toggleReady,
+            startGame,
+            leaveRoom,
+          });
+        }
+        if (screen === "end") {
+          return h(EndScreen, {
+            gameState,
+            myRole,
+            playerId,
+            playAgain,
+            leaveRoom,
+            error,
+            roomCode,
+          });
+        }
+        if (screen === "game") {
+          return h(GameScreen, {
+            gameState,
+            playerId,
+            myRole,
+            selectedWire,
+            setSelectedWire,
+            gameLog,
+            showLog,
+            setShowLog,
+            cutWire,
+            showGameOverEffect,
+            gameOverType,
+          });
+        }
+        return null;
       }
 
       const root = ReactDOM.createRoot(document.getElementById("root"));
-      root.render(h(TimeBombApp));
+      root.render(h(TimeBombGame));
     </script>
   </body>
 </html>
