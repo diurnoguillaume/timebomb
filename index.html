@@ -41,7 +41,299 @@
         min-height: 100vh;
       }
 
-      /* Round Transition Animation */
+      /* ==========================================
+         PHASE SYSTEM - Visual distinction for game phases
+         ========================================== */
+
+      /* Phase Indicator Bar */
+      .phase-bar {
+        position: relative;
+        overflow: hidden;
+      }
+      .phase-bar::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--phase-color, #3b82f6) 0%,
+          transparent 100%
+        );
+        animation: phaseProgress 2s ease-in-out infinite;
+      }
+      @keyframes phaseProgress {
+        0%,
+        100% {
+          transform: translateX(-100%);
+        }
+        50% {
+          transform: translateX(100%);
+        }
+      }
+
+      /* Announcement Phase */
+      .phase-announcement {
+        --phase-color: #f59e0b;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.1) 0%,
+          transparent 50%
+        );
+      }
+      .phase-announcement .phase-indicator {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+      }
+
+      /* Wire Cutting Phase */
+      .phase-cutting {
+        --phase-color: #ef4444;
+        background: linear-gradient(
+          135deg,
+          rgba(239, 68, 68, 0.1) 0%,
+          transparent 50%
+        );
+      }
+      .phase-cutting .phase-indicator {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+      }
+
+      /* ==========================================
+         TENSION SYSTEM - Escalating urgency
+         ========================================== */
+
+      /* Round-based urgency colors */
+      .urgency-1 {
+        --urgency-color: #22c55e;
+        --urgency-bg: rgba(34, 197, 94, 0.1);
+      }
+      .urgency-2 {
+        --urgency-color: #eab308;
+        --urgency-bg: rgba(234, 179, 8, 0.1);
+      }
+      .urgency-3 {
+        --urgency-color: #f97316;
+        --urgency-bg: rgba(249, 115, 22, 0.15);
+      }
+      .urgency-4 {
+        --urgency-color: #ef4444;
+        --urgency-bg: rgba(239, 68, 68, 0.2);
+      }
+
+      /* Heartbeat effect for high tension */
+      @keyframes heartbeat {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        14% {
+          transform: scale(1.05);
+        }
+        28% {
+          transform: scale(1);
+        }
+        42% {
+          transform: scale(1.03);
+        }
+        56% {
+          transform: scale(1);
+        }
+      }
+      .heartbeat-slow {
+        animation: heartbeat 2s ease-in-out infinite;
+      }
+      .heartbeat-medium {
+        animation: heartbeat 1.5s ease-in-out infinite;
+      }
+      .heartbeat-fast {
+        animation: heartbeat 1s ease-in-out infinite;
+      }
+      .heartbeat-critical {
+        animation: heartbeat 0.6s ease-in-out infinite;
+      }
+
+      /* Pulsing border for urgency */
+      @keyframes urgentPulse {
+        0%,
+        100% {
+          border-color: var(--urgency-color);
+          box-shadow: 0 0 10px var(--urgency-bg);
+        }
+        50% {
+          border-color: transparent;
+          box-shadow: 0 0 25px var(--urgency-color);
+        }
+      }
+      .urgent-border {
+        border: 2px solid var(--urgency-color);
+        animation: urgentPulse 1.5s ease-in-out infinite;
+      }
+
+      /* Countdown timer animation */
+      @keyframes countdown {
+        0% {
+          stroke-dashoffset: 0;
+        }
+        100% {
+          stroke-dashoffset: 283;
+        }
+      }
+      .countdown-ring {
+        stroke-dasharray: 283;
+        stroke-dashoffset: 0;
+        transform-origin: center;
+        transform: rotate(-90deg);
+      }
+
+      /* ==========================================
+         PLAYER CARD ENHANCEMENTS
+         ========================================== */
+
+      /* Active turn spotlight */
+      @keyframes spotlightPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 20px rgba(250, 204, 21, 0.4),
+            0 0 40px rgba(250, 204, 21, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        50% {
+          box-shadow: 0 0 30px rgba(250, 204, 21, 0.6),
+            0 0 60px rgba(250, 204, 21, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+      }
+      .player-spotlight {
+        animation: spotlightPulse 2s ease-in-out infinite;
+        border-color: #facc15 !important;
+        position: relative;
+      }
+      .player-spotlight::before {
+        content: "✂️ CUTTING";
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #facc15, #f59e0b);
+        color: #1e293b;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 10px;
+        border-radius: 10px;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        z-index: 10;
+      }
+
+      /* Suspicion indicator */
+      .suspicion-meter {
+        height: 3px;
+        background: #334155;
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 4px;
+      }
+      .suspicion-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.5s ease-out, background-color 0.3s ease;
+      }
+      .suspicion-low {
+        background: linear-gradient(90deg, #22c55e, #4ade80);
+      }
+      .suspicion-medium {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+      }
+      .suspicion-high {
+        background: linear-gradient(90deg, #ef4444, #f87171);
+      }
+
+      /* Player activity ring */
+      .activity-ring {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid;
+      }
+      .activity-recent {
+        border-color: #22c55e;
+        background: #22c55e;
+      }
+      .activity-waiting {
+        border-color: #f59e0b;
+        animation: blink 1.5s infinite;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+
+      /* ==========================================
+         ANNOUNCEMENT SYSTEM ENHANCEMENTS
+         ========================================== */
+
+      /* Announcement history card */
+      .announcement-history {
+        background: linear-gradient(
+          135deg,
+          rgba(30, 41, 59, 0.9),
+          rgba(15, 23, 42, 0.95)
+        );
+        border: 1px solid #334155;
+        backdrop-filter: blur(8px);
+      }
+      .announcement-history-item {
+        position: relative;
+        padding-left: 1rem;
+        border-left: 2px solid #475569;
+      }
+      .announcement-history-item::before {
+        content: "";
+        position: absolute;
+        left: -5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #64748b;
+      }
+      .announcement-history-item.current::before {
+        background: #f59e0b;
+        box-shadow: 0 0 8px #f59e0b;
+      }
+
+      /* Bluff indicator (visual cue when claims don't match revealed cards) */
+      @keyframes suspiciousGlow {
+        0%,
+        100% {
+          box-shadow: 0 0 0 rgba(239, 68, 68, 0);
+        }
+        50% {
+          box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+        }
+      }
+      .suspicious-claim {
+        animation: suspiciousGlow 2s ease-in-out infinite;
+        border-color: #ef4444 !important;
+      }
+
+      /* ==========================================
+         ROUND TRANSITION & GAME OVER EFFECTS
+         ========================================== */
+
       @keyframes fadeInScale {
         0% {
           opacity: 0;
@@ -70,6 +362,16 @@
           opacity: 1;
         }
       }
+      @keyframes slideIn {
+        0% {
+          transform: translateX(-20px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
       .round-transition-enter {
         animation: fadeInScale 0.4s ease-out forwards;
       }
@@ -79,6 +381,9 @@
       .round-number-animate {
         animation: slideUp 0.5s ease-out 0.2s forwards;
         opacity: 0;
+      }
+      .slide-in {
+        animation: slideIn 0.3s ease-out forwards;
       }
 
       /* Game Over Effects */
@@ -183,7 +488,10 @@
         animation: defuseSuccess 0.5s ease-out;
       }
 
-      /* Announcement Popup Animation */
+      /* ==========================================
+         ANNOUNCEMENT POPUP
+         ========================================== */
+
       @keyframes popupSlideIn {
         0% {
           opacity: 0;
@@ -227,18 +535,183 @@
       .announcement-backdrop {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(0, 0, 0, 0.85);
         z-index: 55;
         animation: fadeInScale 0.2s ease-out;
+        backdrop-filter: blur(4px);
       }
       .pulse-attention {
         animation: pulse-glow 2s infinite;
       }
       .announcement-badge {
         font-size: 0.7rem;
-        padding: 2px 6px;
-        border-radius: 4px;
+        padding: 2px 8px;
+        border-radius: 6px;
         white-space: nowrap;
+        font-weight: 600;
+      }
+
+      /* ==========================================
+         WIRE CUTTING ENHANCEMENTS
+         ========================================== */
+
+      @keyframes wireHover {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.08);
+        }
+      }
+      .wire-selectable:hover {
+        animation: wireHover 0.4s ease-in-out;
+      }
+      .wire-selected {
+        animation: spotlightPulse 1s ease-in-out infinite;
+        transform: scale(1.1);
+      }
+
+      /* Cut confirmation button */
+      @keyframes confirmPulse {
+        0%,
+        100% {
+          transform: translateX(-50%) scale(1);
+        }
+        50% {
+          transform: translateX(-50%) scale(1.05);
+        }
+      }
+      .cut-confirm-btn {
+        animation: confirmPulse 1.5s ease-in-out infinite;
+      }
+
+      /* ==========================================
+         TOOLTIP SYSTEM
+         ========================================== */
+
+      .tooltip-container {
+        position: relative;
+      }
+      .tooltip {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s, visibility 0.2s;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border: 1px solid #334155;
+      }
+      .tooltip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1e293b;
+      }
+      .tooltip-container:hover .tooltip {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* ==========================================
+         ROLE-SPECIFIC THEMING
+         ========================================== */
+
+      .role-sherlock {
+        --role-primary: #3b82f6;
+        --role-secondary: #60a5fa;
+        --role-bg: rgba(59, 130, 246, 0.1);
+        --role-border: rgba(59, 130, 246, 0.3);
+      }
+      .role-moriarty {
+        --role-primary: #ef4444;
+        --role-secondary: #f87171;
+        --role-bg: rgba(239, 68, 68, 0.1);
+        --role-border: rgba(239, 68, 68, 0.3);
+      }
+      .role-card {
+        background: var(--role-bg);
+        border: 1px solid var(--role-border);
+        position: relative;
+        overflow: hidden;
+      }
+      .role-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--role-primary),
+          var(--role-secondary)
+        );
+      }
+
+      /* ==========================================
+         PROGRESS INDICATORS
+         ========================================== */
+
+      .progress-track {
+        height: 8px;
+        background: #1e293b;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+      }
+      .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease-out;
+        position: relative;
+      }
+      .progress-fill::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        animation: shimmer 2s infinite;
+      }
+      @keyframes shimmer {
+        0% {
+          transform: translateX(-100%);
+        }
+        100% {
+          transform: translateX(100%);
+        }
+      }
+
+      /* Mobile responsiveness */
+      @media (max-width: 640px) {
+        .announcement-popup {
+          width: 95% !important;
+          max-width: none !important;
+        }
+        .player-spotlight::before {
+          font-size: 0.55rem;
+          padding: 1px 6px;
+        }
       }
     </style>
   </head>
@@ -249,7 +722,7 @@
       // ==========================================
       // FIREBASE CONFIGURATION
       // ==========================================
-      
+
       const firebaseConfig = {
         apiKey: "AIzaSyDAI46UYQMVMCnNqQD9MqR3yhiHUzghYuA",
         authDomain: "timebomb-game.firebaseapp.com",
@@ -289,7 +762,11 @@
       // ==========================================
       const { useState, useEffect, createElement: h } = React;
 
-      // Simple SVG icon components
+      // ==========================================
+      // SVG ICON COMPONENTS
+      // ==========================================
+
+      // Timer/Clock icon
       const Timer = (props) =>
         h(
           "svg",
@@ -314,6 +791,8 @@
           h("line", { x1: "4.93", x2: "7.76", y1: "19.07", y2: "16.24" }),
           h("line", { x1: "16.24", x2: "19.07", y1: "7.76", y2: "4.93" })
         );
+
+      // Shield icon (Sherlock team)
       const Shield = (props) =>
         h(
           "svg",
@@ -333,6 +812,8 @@
             d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
           })
         );
+
+      // Zap/Lightning icon (Moriarty team)
       const Zap = (props) =>
         h(
           "svg",
@@ -352,6 +833,8 @@
             d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z",
           })
         );
+
+      // Users icon
       const Users = (props) =>
         h(
           "svg",
@@ -372,6 +855,8 @@
           h("path", { d: "M22 21v-2a4 4 0 0 0-3-3.87" }),
           h("path", { d: "M16 3.13a4 4 0 0 1 0 7.75" })
         );
+
+      // Copy icon
       const Copy = (props) =>
         h(
           "svg",
@@ -399,6 +884,8 @@
             d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
           })
         );
+
+      // Check icon
       const Check = (props) =>
         h(
           "svg",
@@ -416,6 +903,8 @@
           },
           h("path", { d: "M20 6 9 17l-5-5" })
         );
+
+      // Scissors icon
       const Scissors = (props) =>
         h(
           "svg",
@@ -437,6 +926,8 @@
           h("circle", { cx: "6", cy: "18", r: "3" }),
           h("path", { d: "M14.8 14.8 20 20" })
         );
+
+      // Alert Circle icon
       const AlertCircle = (props) =>
         h(
           "svg",
@@ -456,6 +947,277 @@
           h("line", { x1: "12", x2: "12", y1: "8", y2: "12" }),
           h("line", { x1: "12", x2: "12.01", y1: "16", y2: "16" })
         );
+
+      // Megaphone icon (for announcements)
+      const Megaphone = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", { d: "m3 11 18-5v12L3 13v-2z" }),
+          h("path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6" })
+        );
+
+      // Eye icon (for watching/suspicion)
+      const Eye = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", { d: "M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" }),
+          h("circle", { cx: "12", cy: "12", r: "3" })
+        );
+
+      // Clock icon (for urgency)
+      const Clock = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("circle", { cx: "12", cy: "12", r: "10" }),
+          h("polyline", { points: "12 6 12 12 16 14" })
+        );
+
+      // Target icon (for current player)
+      const Target = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("circle", { cx: "12", cy: "12", r: "10" }),
+          h("circle", { cx: "12", cy: "12", r: "6" }),
+          h("circle", { cx: "12", cy: "12", r: "2" })
+        );
+
+      // Info icon (for tooltips)
+      const Info = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("circle", { cx: "12", cy: "12", r: "10" }),
+          h("path", { d: "M12 16v-4" }),
+          h("path", { d: "M12 8h.01" })
+        );
+
+      // History icon (for announcement history)
+      const History = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }),
+          h("path", { d: "M3 3v5h5" }),
+          h("path", { d: "M12 7v5l4 2" })
+        );
+
+      // Brain icon (for deduction hints)
+      const Brain = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", {
+            d: "M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z",
+          }),
+          h("path", {
+            d: "M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z",
+          }),
+          h("path", { d: "M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4" }),
+          h("path", { d: "M17.599 6.5a3 3 0 0 0 .399-1.375" }),
+          h("path", { d: "M6.003 5.125A3 3 0 0 0 6.401 6.5" }),
+          h("path", { d: "M3.477 10.896a4 4 0 0 1 .585-.396" }),
+          h("path", { d: "M19.938 10.5a4 4 0 0 1 .585.396" }),
+          h("path", { d: "M6 18a4 4 0 0 1-1.967-.516" }),
+          h("path", { d: "M19.967 17.484A4 4 0 0 1 18 18" })
+        );
+
+      // Siren/Alert icon (for bomb warning)
+      const Siren = (props) =>
+        h(
+          "svg",
+          {
+            xmlns: "http://www.w3.org/2000/svg",
+            width: "24",
+            height: "24",
+            viewBox: "0 0 24 24",
+            fill: "none",
+            stroke: "currentColor",
+            strokeWidth: "2",
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            ...props,
+          },
+          h("path", { d: "M7 18v-6a5 5 0 1 1 10 0v6" }),
+          h("path", {
+            d: "M5 21a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z",
+          }),
+          h("path", { d: "M21 12h1" }),
+          h("path", { d: "M18.5 4.5 18 5" }),
+          h("path", { d: "M2 12h1" }),
+          h("path", { d: "M12 2v1" }),
+          h("path", { d: "m4.929 4.929.707.707" }),
+          h("path", { d: "M12 12v6" })
+        );
+
+      // ==========================================
+      // HELPER COMPONENTS
+      // ==========================================
+
+      // Tooltip Component
+      const Tooltip = ({ children, text }) =>
+        h(
+          "div",
+          { className: "tooltip-container" },
+          children,
+          h("div", { className: "tooltip" }, text)
+        );
+
+      // Progress Bar Component
+      const ProgressBar = ({ value, max, color = "blue", label }) =>
+        h(
+          "div",
+          { className: "w-full" },
+          label &&
+            h("div", { className: "text-xs text-slate-400 mb-1" }, label),
+          h(
+            "div",
+            { className: "progress-track" },
+            h("div", {
+              className: `progress-fill bg-${color}-500`,
+              style: { width: `${(value / max) * 100}%` },
+            })
+          )
+        );
+
+      // Phase Indicator Component
+      const PhaseIndicator = ({ phase, isAnnouncement }) =>
+        h(
+          "div",
+          {
+            className: `phase-indicator px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 ${
+              isAnnouncement
+                ? "bg-gradient-to-r from-amber-600 to-amber-500"
+                : "bg-gradient-to-r from-red-600 to-red-500"
+            }`,
+          },
+          isAnnouncement
+            ? h(Megaphone, { className: "w-4 h-4" })
+            : h(Scissors, { className: "w-4 h-4" }),
+          isAnnouncement ? "📢 ANNOUNCEMENT PHASE" : "✂️ WIRE CUTTING PHASE"
+        );
+
+      // Urgency Badge Component
+      const UrgencyBadge = ({ round }) => {
+        const urgencyClass = `urgency-${round}`;
+        const urgencyText = [
+          "",
+          "Calm",
+          "Rising Tension",
+          "High Stakes",
+          "CRITICAL",
+        ][round];
+        const heartbeatClass = [
+          "",
+          "",
+          "heartbeat-slow",
+          "heartbeat-medium",
+          "heartbeat-critical",
+        ][round];
+
+        return h(
+          "div",
+          {
+            className: `${urgencyClass} ${heartbeatClass} flex items-center gap-2 px-3 py-1.5 rounded-lg border`,
+            style: {
+              borderColor: `var(--urgency-color)`,
+              background: `var(--urgency-bg)`,
+            },
+          },
+          h(Clock, {
+            className: "w-4 h-4",
+            style: { color: `var(--urgency-color)` },
+          }),
+          h(
+            "span",
+            {
+              className: "text-sm font-semibold",
+              style: { color: `var(--urgency-color)` },
+            },
+            urgencyText
+          )
+        );
+      };
 
       // HomeScreen Component
       function HomeScreen({
@@ -940,7 +1702,7 @@
         );
       }
 
-      // GameScreen Component
+      // GameScreen Component - Enhanced UX Design
       function GameScreen({
         gameState,
         playerId,
@@ -954,10 +1716,8 @@
         showGameOverEffect,
         gameOverType,
       }) {
-        const [showMyCards, setShowMyCards] = useState(false);
         const [defusingAnnounce, setDefusingAnnounce] = useState(0);
         const [bombAnnounce, setBombAnnounce] = useState(0);
-        const [showAnnouncements, setShowAnnouncements] = useState(false);
         const [showAnnouncementPopup, setShowAnnouncementPopup] =
           useState(false);
         const [popupExiting, setPopupExiting] = useState(false);
@@ -980,12 +1740,10 @@
             setShowRoundTransition(true);
             setTransitionExiting(false);
 
-            // Start exit animation after 1.5s
             const exitTimer = setTimeout(() => {
               setTransitionExiting(true);
             }, 1500);
 
-            // Hide overlay after exit animation
             const hideTimer = setTimeout(() => {
               setShowRoundTransition(false);
             }, 1800);
@@ -1000,7 +1758,7 @@
           }
         }, [gameState?.round, lastSeenRound]);
 
-        // ADD SAFETY CHECKS HERE
+        // Safety checks
         if (!gameState || !gameState.players || !gameState.config) {
           return h(
             "div",
@@ -1011,8 +1769,8 @@
             h(
               "div",
               { className: "text-white text-center" },
-              h("div", { className: "text-2xl mb-4" }, "⏳"),
-              h("div", null, "Loading game...")
+              h("div", { className: "text-4xl mb-4 animate-pulse" }, "⏳"),
+              h("div", { className: "text-xl" }, "Loading game...")
             )
           );
         }
@@ -1028,8 +1786,8 @@
             h(
               "div",
               { className: "text-white text-center" },
-              h("div", { className: "text-2xl mb-4" }, "⏳"),
-              h("div", null, "Loading game...")
+              h("div", { className: "text-4xl mb-4 animate-pulse" }, "⏳"),
+              h("div", { className: "text-xl" }, "Syncing game state...")
             )
           );
         }
@@ -1054,7 +1812,7 @@
               }
             : { defusing: 0, bomb: 0, safe: 0 };
 
-        // Check if current player has already announced this round
+        // Check announcements
         const myAnnouncement =
           gameState.announcements && gameState.announcements[playerId];
         const hasAnnouncedThisRound =
@@ -1062,7 +1820,6 @@
           myAnnouncement.round === gameState.round &&
           myAnnouncement.locked;
 
-        // Check if all players have announced this round
         const allPlayersAnnounced = gameState.players.every((p) => {
           const announcement =
             gameState.announcements && gameState.announcements[p.id];
@@ -1073,8 +1830,39 @@
           );
         });
 
+        // Current game phase
+        const currentPhase = allPlayersAnnounced ? "cutting" : "announcement";
+
+        // Urgency level based on round
+        const urgencyLevel = gameState.round;
+        const urgencyClass = `urgency-${urgencyLevel}`;
+
+        // Calculate suspicion for a player based on their announcements vs revealed cards
+        const calculateSuspicion = (player) => {
+          if (!gameState.announcements || !gameState.announcements[player.id])
+            return 0;
+          const announcement = gameState.announcements[player.id];
+          if (!announcement.locked) return 0;
+
+          // Count revealed cards for this player across all rounds
+          const revealedDefusing = player.wires
+            ? player.wires.filter((w) => w.type === "defusing" && w.revealed)
+                .length
+            : 0;
+          const revealedBomb = player.wires
+            ? player.wires.filter((w) => w.type === "bomb" && w.revealed).length
+            : 0;
+
+          // If they claimed fewer special cards than revealed, they're suspicious
+          let suspicion = 0;
+          if (revealedDefusing > announcement.defusing) suspicion += 40;
+          if (revealedBomb > announcement.bomb) suspicion += 60;
+
+          return Math.min(100, suspicion);
+        };
+
         const announceCards = async () => {
-          if (hasAnnouncedThisRound) return; // Prevent re-announcement
+          if (hasAnnouncedThisRound) return;
           try {
             const announcements = gameState.announcements || {};
             announcements[playerId] = {
@@ -1082,7 +1870,7 @@
               defusing: defusingAnnounce,
               bomb: bombAnnounce,
               round: gameState.round,
-              locked: true, // Mark as locked after submission
+              locked: true,
             };
             await database
               .ref(`rooms/${gameState.code}/announcements`)
@@ -1092,7 +1880,6 @@
           }
         };
 
-        // Helper to close popup with animation
         const closeAnnouncementPopup = () => {
           setPopupExiting(true);
           setTimeout(() => {
@@ -1101,186 +1888,286 @@
           }, 200);
         };
 
-
-        // Team-based background gradient
+        // Team-based background with urgency overlay
         const teamBackground =
           myRole === "sherlock"
             ? "from-slate-900 via-blue-950 to-slate-900"
             : "from-slate-900 via-red-950 to-slate-900";
 
+        const roleClass =
+          myRole === "sherlock" ? "role-sherlock" : "role-moriarty";
+
+        // Get total claimed special cards
+        const getTotalClaimed = () => {
+          if (!gameState.announcements) return { defusing: 0, bomb: 0 };
+          return Object.values(gameState.announcements).reduce(
+            (acc, ann) => {
+              if (ann.round === gameState.round && ann.locked) {
+                acc.defusing += ann.defusing || 0;
+                acc.bomb += ann.bomb || 0;
+              }
+              return acc;
+            },
+            { defusing: 0, bomb: 0 }
+          );
+        };
+
+        const totalClaimed = getTotalClaimed();
+
         return h(
           "div",
           {
-            className: `min-h-screen bg-gradient-to-br ${teamBackground} p-4`,
+            className: `min-h-screen bg-gradient-to-br ${teamBackground} p-4 ${urgencyClass}`,
           },
 
-          // ANNOUNCEMENT POPUP MODAL
+          // ==========================================
+          // ENHANCED ANNOUNCEMENT POPUP MODAL
+          // ==========================================
           showAnnouncementPopup &&
             h(
               "div",
               null,
-              // Backdrop
               h("div", {
                 className: "announcement-backdrop",
                 onClick: closeAnnouncementPopup,
               }),
-              // Popup
               h(
                 "div",
                 {
                   className: `announcement-popup ${
                     popupExiting ? "announcement-popup-exit" : ""
-                  } bg-slate-800 rounded-2xl p-6 border-2 border-yellow-500 shadow-2xl w-[90%] max-w-md pulse-attention`,
+                  } bg-slate-800 rounded-2xl p-6 border-2 border-yellow-500 shadow-2xl w-[90%] max-w-md`,
                 },
+                // Header
                 h(
                   "div",
-                  { className: "text-center mb-4" },
-                  h("div", { className: "text-4xl mb-2" }, "📢"),
+                  { className: "text-center mb-5" },
+                  h("div", { className: "text-5xl mb-3" }, "📢"),
                   h(
                     "h2",
-                    { className: "text-2xl font-bold text-white" },
-                    "Announce Your Cards"
+                    { className: "text-2xl font-bold text-white mb-1" },
+                    "Make Your Announcement"
                   ),
                   h(
                     "p",
-                    { className: "text-yellow-400 text-sm mt-1" },
-                    "You can lie! Bluff your opponents."
+                    { className: "text-amber-400 text-sm" },
+                    myRole === "sherlock"
+                      ? "🔍 Help your team find defusing wires—but be careful what you reveal!"
+                      : "🎭 Mislead the detectives—claim whatever serves your plan!"
                   )
                 ),
-                // Card counts display
+
+                // Your actual cards (private info)
                 h(
                   "div",
-                  { className: "bg-slate-900/50 rounded-lg p-3 mb-4" },
+                  {
+                    className:
+                      "bg-slate-900/70 rounded-xl p-4 mb-5 border border-slate-700",
+                  },
                   h(
                     "div",
-                    { className: "text-slate-400 text-xs mb-2 text-center" },
-                    "Your actual cards (only you can see this):"
+                    { className: "flex items-center gap-2 mb-3" },
+                    h(Eye, { className: "w-4 h-4 text-slate-400" }),
+                    h(
+                      "span",
+                      {
+                        className:
+                          "text-slate-400 text-xs uppercase tracking-wide font-semibold",
+                      },
+                      "Your Hidden Cards"
+                    )
                   ),
                   h(
                     "div",
-                    { className: "flex justify-center gap-4 text-sm" },
+                    { className: "flex justify-center gap-6" },
                     h(
-                      "span",
-                      { className: "text-blue-400" },
-                      `✂️ ${myActualCards.defusing}`
+                      "div",
+                      { className: "text-center" },
+                      h("div", { className: "text-3xl mb-1" }, "✂️"),
+                      h(
+                        "div",
+                        { className: "text-blue-400 font-bold text-lg" },
+                        myActualCards.defusing
+                      ),
+                      h(
+                        "div",
+                        { className: "text-slate-500 text-xs" },
+                        "Defusing"
+                      )
                     ),
                     h(
-                      "span",
-                      { className: "text-red-400" },
-                      `💣 ${myActualCards.bomb}`
+                      "div",
+                      { className: "text-center" },
+                      h("div", { className: "text-3xl mb-1" }, "💣"),
+                      h(
+                        "div",
+                        { className: "text-red-400 font-bold text-lg" },
+                        myActualCards.bomb
+                      ),
+                      h("div", { className: "text-slate-500 text-xs" }, "Bomb")
                     ),
                     h(
-                      "span",
-                      { className: "text-slate-400" },
-                      `✓ ${myActualCards.safe}`
+                      "div",
+                      { className: "text-center" },
+                      h("div", { className: "text-3xl mb-1" }, "✓"),
+                      h(
+                        "div",
+                        { className: "text-slate-400 font-bold text-lg" },
+                        myActualCards.safe
+                      ),
+                      h("div", { className: "text-slate-500 text-xs" }, "Safe")
                     )
                   )
                 ),
-                // Announcement inputs
+
+                // Announcement inputs with structured prompts
                 h(
                   "div",
-                  { className: "grid grid-cols-2 gap-4 mb-4" },
-                  // Defusing announcer
+                  { className: "mb-5" },
                   h(
                     "div",
-                    {
-                      className:
-                        "bg-blue-900/40 rounded-xl p-4 border border-blue-700",
-                    },
+                    { className: "text-center mb-3" },
+                    h(
+                      "span",
+                      { className: "text-white font-semibold" },
+                      "What will you claim?"
+                    ),
+                    h(
+                      "p",
+                      { className: "text-slate-400 text-xs mt-1" },
+                      "You can lie! Others will remember your claims."
+                    )
+                  ),
+                  h(
+                    "div",
+                    { className: "grid grid-cols-2 gap-4" },
+                    // Defusing claim
                     h(
                       "div",
                       {
                         className:
-                          "text-blue-300 text-sm mb-3 text-center font-bold",
+                          "bg-blue-900/40 rounded-xl p-4 border border-blue-700",
                       },
-                      "✂️ Defusing"
-                    ),
-                    h(
-                      "div",
-                      { className: "flex items-center justify-center gap-3" },
-                      h(
-                        "button",
-                        {
-                          onClick: () =>
-                            setDefusingAnnounce(
-                              Math.max(0, defusingAnnounce - 1)
-                            ),
-                          className:
-                            "bg-blue-700 hover:bg-blue-600 text-white w-12 h-12 rounded-full font-bold text-2xl transition-all hover:scale-110",
-                        },
-                        "-"
-                      ),
                       h(
                         "div",
                         {
                           className:
-                            "text-4xl font-bold text-white w-14 text-center",
+                            "text-blue-300 text-sm mb-3 text-center font-bold flex items-center justify-center gap-2",
                         },
-                        defusingAnnounce
+                        "✂️ Defusing Wires"
                       ),
                       h(
-                        "button",
-                        {
-                          onClick: () =>
-                            setDefusingAnnounce(
-                              Math.min(5, defusingAnnounce + 1)
-                            ),
-                          className:
-                            "bg-blue-700 hover:bg-blue-600 text-white w-12 h-12 rounded-full font-bold text-2xl transition-all hover:scale-110",
-                        },
-                        "+"
+                        "div",
+                        { className: "flex items-center justify-center gap-3" },
+                        h(
+                          "button",
+                          {
+                            onClick: () =>
+                              setDefusingAnnounce(
+                                Math.max(0, defusingAnnounce - 1)
+                              ),
+                            className:
+                              "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-full font-bold text-xl transition-all hover:scale-110",
+                          },
+                          "−"
+                        ),
+                        h(
+                          "div",
+                          {
+                            className:
+                              "text-3xl font-bold text-white w-12 text-center",
+                          },
+                          defusingAnnounce
+                        ),
+                        h(
+                          "button",
+                          {
+                            onClick: () =>
+                              setDefusingAnnounce(
+                                Math.min(5, defusingAnnounce + 1)
+                              ),
+                            className:
+                              "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-full font-bold text-xl transition-all hover:scale-110",
+                          },
+                          "+"
+                        )
                       )
-                    )
-                  ),
-                  // Bomb announcer
-                  h(
-                    "div",
-                    {
-                      className:
-                        "bg-red-900/40 rounded-xl p-4 border border-red-700",
-                    },
+                    ),
+                    // Bomb claim
                     h(
                       "div",
                       {
                         className:
-                          "text-red-300 text-sm mb-3 text-center font-bold",
+                          "bg-red-900/40 rounded-xl p-4 border border-red-700",
                       },
-                      "💣 Bomb"
-                    ),
-                    h(
-                      "div",
-                      { className: "flex items-center justify-center gap-3" },
-                      h(
-                        "button",
-                        {
-                          onClick: () =>
-                            setBombAnnounce(Math.max(0, bombAnnounce - 1)),
-                          className:
-                            "bg-red-700 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-2xl transition-all hover:scale-110",
-                        },
-                        "-"
-                      ),
                       h(
                         "div",
                         {
                           className:
-                            "text-4xl font-bold text-white w-14 text-center",
+                            "text-red-300 text-sm mb-3 text-center font-bold flex items-center justify-center gap-2",
                         },
-                        bombAnnounce
+                        "💣 Bomb"
                       ),
                       h(
-                        "button",
-                        {
-                          onClick: () =>
-                            setBombAnnounce(Math.min(5, bombAnnounce + 1)),
-                          className:
-                            "bg-red-700 hover:bg-red-600 text-white w-12 h-12 rounded-full font-bold text-2xl transition-all hover:scale-110",
-                        },
-                        "+"
+                        "div",
+                        { className: "flex items-center justify-center gap-3" },
+                        h(
+                          "button",
+                          {
+                            onClick: () =>
+                              setBombAnnounce(Math.max(0, bombAnnounce - 1)),
+                            className:
+                              "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-full font-bold text-xl transition-all hover:scale-110",
+                          },
+                          "−"
+                        ),
+                        h(
+                          "div",
+                          {
+                            className:
+                              "text-3xl font-bold text-white w-12 text-center",
+                          },
+                          bombAnnounce
+                        ),
+                        h(
+                          "button",
+                          {
+                            onClick: () =>
+                              setBombAnnounce(Math.min(1, bombAnnounce + 1)),
+                            className:
+                              "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-full font-bold text-xl transition-all hover:scale-110",
+                          },
+                          "+"
+                        )
                       )
                     )
                   )
                 ),
+
+                // Role-specific hint
+                h(
+                  "div",
+                  {
+                    className: `rounded-lg p-3 mb-4 text-sm ${
+                      myRole === "sherlock"
+                        ? "bg-blue-900/30 border border-blue-800 text-blue-300"
+                        : "bg-red-900/30 border border-red-800 text-red-300"
+                    }`,
+                  },
+                  h(
+                    "div",
+                    { className: "flex items-start gap-2" },
+                    h(Brain, { className: "w-4 h-4 mt-0.5 flex-shrink-0" }),
+                    h(
+                      "span",
+                      null,
+                      myRole === "sherlock"
+                        ? "💡 Tip: Honest claims help your team coordinate. But if Moriarty knows who has defusing wires, they'll avoid cutting them!"
+                        : "💡 Tip: Claim defusing wires to seem trustworthy, or claim the bomb to deter cuts. Sow confusion!"
+                    )
+                  )
+                ),
+
                 // Submit button
                 h(
                   "button",
@@ -1290,11 +2177,10 @@
                       closeAnnouncementPopup();
                     },
                     className:
-                      "w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-slate-900 py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] shadow-lg",
+                      "w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] shadow-lg",
                   },
-                  "🔒 Lock In Announcement"
+                  "🔒 Lock In My Claim"
                 ),
-                // Cancel button
                 h(
                   "button",
                   {
@@ -1307,12 +2193,14 @@
               )
             ),
 
+          // ==========================================
           // ROUND TRANSITION OVERLAY
+          // ==========================================
           showRoundTransition &&
             h(
               "div",
               {
-                className: `fixed inset-0 z-50 flex items-center justify-center bg-black/80 ${
+                className: `fixed inset-0 z-50 flex items-center justify-center bg-black/90 ${
                   transitionExiting
                     ? "round-transition-exit"
                     : "round-transition-enter"
@@ -1320,7 +2208,7 @@
               },
               h(
                 "div",
-                { className: "text-center" },
+                { className: "text-center px-4" },
                 h(
                   "div",
                   {
@@ -1334,38 +2222,87 @@
                 h(
                   "div",
                   {
-                    className:
-                      "text-6xl md:text-8xl font-bold text-white mb-4 round-number-animate",
+                    className: `text-6xl md:text-8xl font-bold mb-4 round-number-animate ${
+                      transitionRound >= 3
+                        ? "text-orange-400"
+                        : transitionRound === 4
+                        ? "text-red-400"
+                        : "text-white"
+                    }`,
                   },
                   `Round ${transitionRound}`
                 ),
                 h(
                   "div",
-                  { className: "text-yellow-400 text-lg round-number-animate" },
-                  "Cards have been redistributed!"
+                  {
+                    className:
+                      "text-amber-400 text-lg round-number-animate mb-2",
+                  },
+                  "🔄 Cards redistributed!"
                 ),
                 h(
                   "div",
-                  {
-                    className:
-                      "mt-4 text-slate-500 text-sm round-number-animate",
-                  },
-                  `${5 - transitionRound} round${
-                    5 - transitionRound !== 1 ? "s" : ""
-                  } remaining`
-                )
+                  { className: "round-number-animate" },
+                  transitionRound === 4
+                    ? h(
+                        "span",
+                        { className: "text-red-400 font-bold text-xl" },
+                        "⚠️ FINAL ROUND - Last chance!"
+                      )
+                    : h(
+                        "span",
+                        { className: "text-slate-500" },
+                        `${4 - transitionRound} round${
+                          4 - transitionRound !== 1 ? "s" : ""
+                        } remaining`
+                      )
+                ),
+                transitionRound >= 3 &&
+                  h(
+                    "div",
+                    {
+                      className:
+                        "mt-4 text-orange-300 text-sm round-number-animate",
+                    },
+                    "🔥 Tension is rising..."
+                  )
               )
             ),
 
+          // ==========================================
+          // MAIN GAME CONTENT
+          // ==========================================
           h(
             "div",
             { className: "max-w-6xl mx-auto" },
+
+            // ==========================================
+            // TOP HEADER - Status Bar with Phase Indicator
+            // ==========================================
             h(
               "div",
               {
-                className:
-                  "bg-slate-800 rounded-xl p-4 mb-4 border border-slate-700",
+                className: `bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 mb-4 border border-slate-700 ${
+                  currentPhase === "announcement"
+                    ? "phase-announcement"
+                    : "phase-cutting"
+                } phase-bar`,
               },
+              // Phase indicator and urgency
+              h(
+                "div",
+                {
+                  className:
+                    "flex flex-wrap gap-3 justify-between items-center mb-4",
+                },
+                h(PhaseIndicator, {
+                  phase: currentPhase,
+                  isAnnouncement: currentPhase === "announcement",
+                }),
+                h(UrgencyBadge, { round: gameState.round })
+              ),
+
+              // Main stats row
               h(
                 "div",
                 {
@@ -1375,166 +2312,328 @@
                 h(
                   "div",
                   { className: "flex items-center gap-4 flex-wrap" },
+                  // Role badge
                   h(
                     "div",
                     {
-                      className: `px-4 py-2 rounded-lg font-bold flex items-center ${
-                        myRole === "sherlock"
-                          ? "bg-blue-600 text-white"
-                          : "bg-red-600 text-white"
-                      }`,
+                      className: `role-card px-4 py-2 rounded-lg font-bold flex items-center gap-2 ${roleClass}`,
                     },
                     myRole === "sherlock"
-                      ? h(Shield, { className: "w-4 h-4 mr-2" })
-                      : h(Zap, { className: "w-4 h-4 mr-2" }),
+                      ? h(Shield, { className: "w-5 h-5" })
+                      : h(Zap, { className: "w-5 h-5" }),
                     h(
                       "span",
-                      null,
+                      { className: "text-white" },
                       myRole === "sherlock" ? "Sherlock" : "Moriarty"
                     )
                   ),
+                  // Round counter
                   h(
-                    "div",
-                    { className: "text-white" },
-                    h("div", { className: "text-sm text-slate-400" }, "Round"),
+                    Tooltip,
+                    {
+                      text: `${4 - gameState.round} rounds remaining to defuse`,
+                    },
                     h(
                       "div",
-                      { className: "text-2xl font-bold" },
-                      `${gameState.round}/4`
+                      {
+                        className:
+                          "text-white bg-slate-700/50 px-3 py-2 rounded-lg",
+                      },
+                      h(
+                        "div",
+                        { className: "text-xs text-slate-400" },
+                        "Round"
+                      ),
+                      h(
+                        "div",
+                        {
+                          className: `text-xl font-bold ${
+                            gameState.round >= 3 ? "text-orange-400" : ""
+                          }`,
+                        },
+                        `${gameState.round}/4`
+                      )
                     )
                   ),
+                  // Defusing progress
                   h(
-                    "div",
-                    { className: "text-white" },
+                    Tooltip,
+                    {
+                      text: `Find ${
+                        gameState.config.defusing - gameState.defusingFound
+                      } more to win!`,
+                    },
                     h(
                       "div",
-                      { className: "text-sm text-slate-400" },
-                      "Defusing Wires"
-                    ),
-                    h(
-                      "div",
-                      { className: "text-2xl font-bold text-blue-400" },
-                      `${gameState.defusingFound}/${gameState.config.defusing}`
+                      {
+                        className:
+                          "text-white bg-slate-700/50 px-3 py-2 rounded-lg",
+                      },
+                      h(
+                        "div",
+                        { className: "text-xs text-slate-400" },
+                        "Defusing Found"
+                      ),
+                      h(
+                        "div",
+                        { className: "text-xl font-bold text-blue-400" },
+                        `${gameState.defusingFound}/${gameState.config.defusing}`
+                      )
                     )
                   )
                 ),
+                // Current turn indicator
                 h(
                   "div",
-                  { className: "text-white text-right" },
+                  {
+                    className: `text-right px-4 py-2 rounded-lg ${
+                      isMyTurn
+                        ? "bg-amber-500/20 border border-amber-500"
+                        : "bg-slate-700/50"
+                    }`,
+                  },
                   h(
                     "div",
-                    { className: "text-sm text-slate-400" },
+                    { className: "text-xs text-slate-400" },
                     "Current Turn"
                   ),
                   h(
                     "div",
-                    { className: "text-xl font-bold" },
+                    {
+                      className: `text-xl font-bold ${
+                        isMyTurn ? "text-amber-400" : "text-white"
+                      }`,
+                    },
                     currentPlayerObj.name
                   ),
                   isMyTurn &&
                     h(
                       "div",
-                      { className: "text-sm text-yellow-400" },
-                      "Your turn!"
+                      { className: "text-xs text-amber-300 mt-1" },
+                      "✂️ Choose a wire to cut!"
                     )
                 )
               ),
+
+              // Role mission reminder with contextual help
               h(
                 "div",
                 {
-                  className: `mt-4 p-3 rounded-lg ${
-                    myRole === "sherlock" ? "bg-blue-900/50" : "bg-red-900/50"
-                  }`,
+                  className: `mt-4 p-3 rounded-lg role-card ${roleClass}`,
                 },
                 h(
-                  "p",
-                  { className: "text-white text-sm" },
-                  myRole === "sherlock"
-                    ? `🎯 Find all ${gameState.config.defusing} Defusing wires to win. Avoid the Bomb!`
-                    : "💣 Cut the Bomb or survive 4 rounds to win. Mislead others!"
-                )
-              ),
-
-              // ANNOUNCEMENT STATUS BANNER
-              !allPlayersAnnounced &&
-                h(
                   "div",
-                  {
-                    className:
-                      "mt-4 bg-yellow-900/50 border border-yellow-600 rounded-lg p-4",
-                  },
+                  { className: "flex items-start gap-3" },
                   h(
                     "div",
-                    {
-                      className:
-                        "flex flex-wrap items-center justify-between gap-3 mb-3",
-                    },
-                    h(
-                      "div",
-                      { className: "text-yellow-300 font-bold" },
-                      "⚠️ Waiting for all players to announce"
-                    ),
-                    !hasAnnouncedThisRound &&
-                      h(
-                        "button",
-                        {
-                          onClick: () => setShowAnnouncementPopup(true),
-                          className:
-                            "bg-yellow-600 hover:bg-yellow-500 text-slate-900 px-4 py-2 rounded-lg font-bold text-sm transition-all hover:scale-105 pulse-attention",
-                        },
-                        "📢 Make Your Announcement"
-                      )
+                    { className: "text-2xl" },
+                    myRole === "sherlock" ? "🔍" : "🎭"
                   ),
                   h(
                     "div",
-                    { className: "flex flex-wrap gap-2" },
-                    gameState.players.map((p) => {
-                      const pAnnouncement =
-                        gameState.announcements &&
-                        gameState.announcements[p.id];
-                      const pHasAnnounced =
-                        pAnnouncement &&
-                        pAnnouncement.round === gameState.round &&
-                        pAnnouncement.locked;
-                      return h(
-                        "span",
-                        {
-                          key: p.id,
-                          className: `px-2 py-1 rounded text-sm ${
-                            pHasAnnounced
-                              ? "bg-green-700 text-green-200"
-                              : "bg-slate-700 text-slate-400"
-                          }`,
-                        },
-                        pHasAnnounced ? `✓ ${p.name}` : `⏳ ${p.name}`
-                      );
-                    })
+                    null,
+                    h(
+                      "p",
+                      { className: "text-white text-sm font-semibold" },
+                      myRole === "sherlock"
+                        ? "Your Mission: Defuse the Bomb"
+                        : "Your Mission: Sabotage"
+                    ),
+                    h(
+                      "p",
+                      { className: "text-slate-300 text-xs mt-1" },
+                      myRole === "sherlock"
+                        ? `Find all ${gameState.config.defusing} defusing wires before round 4 ends. Watch for lies in announcements!`
+                        : `Make someone cut the bomb, or survive until round 4 ends. Mislead and misdirect!`
+                    )
                   )
-                ),
+                )
+              ),
 
-              allPlayersAnnounced &&
-                h(
-                  "div",
-                  {
-                    className:
-                      "mt-4 bg-green-900/50 border border-green-600 rounded-lg p-3",
-                  },
-                  h(
+              // ==========================================
+              // PHASE-SPECIFIC CONTENT
+              // ==========================================
+              currentPhase === "announcement"
+                ? h(
                     "div",
-                    { className: "text-green-300 font-bold" },
-                    "✓ All players have announced - Wire cutting enabled!"
+                    {
+                      className:
+                        "mt-4 bg-amber-900/40 border border-amber-600 rounded-xl p-4",
+                    },
+                    h(
+                      "div",
+                      {
+                        className:
+                          "flex flex-wrap items-center justify-between gap-3 mb-4",
+                      },
+                      h(
+                        "div",
+                        { className: "flex items-center gap-2" },
+                        h(Megaphone, { className: "w-5 h-5 text-amber-400" }),
+                        h(
+                          "span",
+                          { className: "text-amber-300 font-bold" },
+                          "Announcement Phase"
+                        )
+                      ),
+                      !hasAnnouncedThisRound &&
+                        h(
+                          "button",
+                          {
+                            onClick: () => setShowAnnouncementPopup(true),
+                            className:
+                              "bg-amber-600 hover:bg-amber-500 text-slate-900 px-5 py-2.5 rounded-lg font-bold text-sm transition-all hover:scale-105 pulse-attention flex items-center gap-2",
+                          },
+                          h(Megaphone, { className: "w-4 h-4" }),
+                          "Make Your Announcement"
+                        )
+                    ),
+                    h(
+                      "p",
+                      { className: "text-amber-200/80 text-sm mb-4" },
+                      "Each player must announce what cards they claim to have. Everyone can lie! Wire cutting begins after all announcements."
+                    ),
+                    // Announcement status grid
+                    h(
+                      "div",
+                      {
+                        className:
+                          "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2",
+                      },
+                      gameState.players.map((p) => {
+                        const pAnn =
+                          gameState.announcements &&
+                          gameState.announcements[p.id];
+                        const pHasAnnounced =
+                          pAnn && pAnn.round === gameState.round && pAnn.locked;
+                        const isMe = p.id === playerId;
+                        return h(
+                          "div",
+                          {
+                            key: p.id,
+                            className: `rounded-lg p-2 text-center transition-all ${
+                              pHasAnnounced
+                                ? "bg-green-900/50 border border-green-700"
+                                : "bg-slate-700/50 border border-slate-600"
+                            } ${isMe ? "ring-2 ring-blue-500" : ""}`,
+                          },
+                          h(
+                            "div",
+                            {
+                              className:
+                                "text-white text-sm font-medium truncate",
+                            },
+                            p.name,
+                            isMe &&
+                              h(
+                                "span",
+                                { className: "text-blue-400 text-xs ml-1" },
+                                "(You)"
+                              )
+                          ),
+                          pHasAnnounced
+                            ? h(
+                                "div",
+                                { className: "flex justify-center gap-2 mt-1" },
+                                h(
+                                  "span",
+                                  {
+                                    className:
+                                      "text-xs bg-blue-800/60 text-blue-300 px-1.5 py-0.5 rounded",
+                                  },
+                                  `✂️${pAnn.defusing}`
+                                ),
+                                h(
+                                  "span",
+                                  {
+                                    className:
+                                      "text-xs bg-red-800/60 text-red-300 px-1.5 py-0.5 rounded",
+                                  },
+                                  `💣${pAnn.bomb}`
+                                )
+                              )
+                            : h(
+                                "div",
+                                {
+                                  className:
+                                    "text-xs text-slate-400 mt-1 animate-pulse",
+                                },
+                                "⏳ Thinking..."
+                              )
+                        );
+                      })
+                    )
                   )
-                ),
+                : h(
+                    "div",
+                    {
+                      className:
+                        "mt-4 bg-green-900/40 border border-green-600 rounded-xl p-4",
+                    },
+                    h(
+                      "div",
+                      { className: "flex items-center gap-2 mb-2" },
+                      h(Scissors, { className: "w-5 h-5 text-green-400" }),
+                      h(
+                        "span",
+                        { className: "text-green-300 font-bold" },
+                        "Wire Cutting Phase"
+                      )
+                    ),
+                    h(
+                      "p",
+                      { className: "text-green-200/80 text-sm" },
+                      isMyTurn
+                        ? "🎯 It's your turn! Select a wire from another player to cut."
+                        : `Waiting for ${currentPlayerObj.name} to cut a wire...`
+                    ),
+                    // Summary of claims
+                    allPlayersAnnounced &&
+                      h(
+                        "div",
+                        { className: "mt-3 flex flex-wrap gap-4 text-sm" },
+                        h(
+                          "div",
+                          { className: "flex items-center gap-2" },
+                          h(Brain, { className: "w-4 h-4 text-slate-400" }),
+                          h(
+                            "span",
+                            { className: "text-slate-400" },
+                            "Total claimed:"
+                          ),
+                          h(
+                            "span",
+                            { className: "text-blue-400 font-semibold" },
+                            `✂️ ${totalClaimed.defusing} defusing`
+                          ),
+                          h("span", { className: "text-slate-500" }, "•"),
+                          h(
+                            "span",
+                            { className: "text-red-400 font-semibold" },
+                            `💣 ${totalClaimed.bomb} bomb`
+                          )
+                        ),
+                        totalClaimed.defusing !==
+                          gameState.config.defusing - gameState.defusingFound &&
+                          h(
+                            "span",
+                            { className: "text-amber-400 text-xs" },
+                            "⚠️ Claims don't match expected!"
+                          )
+                      )
+                  ),
 
+              // Game log toggle (host only)
               isHost &&
                 h(
                   "button",
                   {
                     onClick: () => setShowLog(!showLog),
                     className:
-                      "mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg text-sm transition-all",
+                      "mt-4 w-full bg-slate-700/50 hover:bg-slate-700 text-slate-300 py-2 rounded-lg text-sm transition-all flex items-center justify-center gap-2",
                   },
-                  showLog ? "📜 Hide Game Log" : "📜 Show Game Log"
+                  h(History, { className: "w-4 h-4" }),
+                  showLog ? "Hide Game Log" : "Show Game Log"
                 ),
               showLog &&
                 gameLog.length > 0 &&
@@ -1542,7 +2641,7 @@
                   "div",
                   {
                     className:
-                      "mt-4 bg-slate-900 rounded-lg p-3 max-h-40 overflow-y-auto",
+                      "mt-3 bg-slate-900/70 rounded-lg p-3 max-h-40 overflow-y-auto",
                   },
                   gameLog
                     .slice(-10)
@@ -1560,80 +2659,94 @@
                     )
                 )
             ),
+
+            // ==========================================
+            // PLAYER CARDS GRID - Enhanced
+            // ==========================================
             h(
               "div",
               {
                 className:
-                  "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+                  "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4",
               },
               gameState.players
                 .filter((player) => player.wires && Array.isArray(player.wires))
                 .map((player) => {
                   const isCurrentPlayer = currentPlayerObj.id === player.id;
                   const isMe = player.id === playerId;
-                  // Get player's announcement for current round
-                  const playerAnnouncement =
+                  const playerAnn =
                     gameState.announcements &&
                     gameState.announcements[player.id];
                   const hasPlayerAnnounced =
-                    playerAnnouncement &&
-                    playerAnnouncement.round === gameState.round &&
-                    playerAnnouncement.locked;
+                    playerAnn &&
+                    playerAnn.round === gameState.round &&
+                    playerAnn.locked;
+                  const suspicionLevel = calculateSuspicion(player);
+                  const unrevealedCount = player.wires.filter(
+                    (w) => !w.revealed
+                  ).length;
+
                   return h(
                     "div",
                     {
                       key: player.id,
-                      className: `bg-slate-800 rounded-xl p-4 border-2 transition-all ${
+                      className: `bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 border-2 transition-all relative ${
                         isCurrentPlayer
-                          ? "border-yellow-400 shadow-lg shadow-yellow-400/20"
-                          : "border-slate-700"
-                      } ${isMe ? "ring-2 ring-blue-500" : ""}`,
+                          ? "player-spotlight border-amber-400"
+                          : "border-slate-700 hover:border-slate-600"
+                      } ${isMe ? "ring-2 ring-blue-500/50" : ""}`,
                     },
+                    // Player header
                     h(
                       "div",
                       { className: "flex flex-col gap-2 mb-3" },
-                      // Player name row
                       h(
                         "div",
-                        { className: "flex justify-between items-center" },
+                        { className: "flex justify-between items-start" },
                         h(
-                          "h3",
+                          "div",
                           {
-                            className:
-                              "text-white font-bold text-lg truncate flex items-center",
+                            className: "flex items-center gap-2 flex-1 min-w-0",
                           },
-                          player.name,
+                          h(
+                            "h3",
+                            {
+                              className:
+                                "text-white font-bold text-lg truncate",
+                            },
+                            player.name
+                          ),
                           isMe &&
                             h(
                               "span",
-                              { className: "text-xs ml-2 text-blue-400" },
+                              {
+                                className:
+                                  "text-xs text-blue-400 font-semibold",
+                              },
                               "(You)"
-                            ),
-                          isCurrentPlayer &&
-                            h(Scissors, {
-                              className: "inline w-5 h-5 ml-2 text-yellow-400",
-                            })
+                            )
                         ),
                         h(
                           "span",
-                          { className: "text-slate-400 text-sm" },
-                          `${
-                            player.wires.filter((w) => !w.revealed).length
-                          } wires`
+                          {
+                            className:
+                              "text-slate-400 text-sm whitespace-nowrap",
+                          },
+                          `${unrevealedCount} wires`
                         )
                       ),
-                      // Announcement badge row
+                      // Announcement display
                       hasPlayerAnnounced
                         ? h(
                             "div",
-                            { className: "flex items-center gap-2" },
+                            { className: "flex items-center gap-2 flex-wrap" },
                             h(
                               "span",
                               {
                                 className:
                                   "announcement-badge bg-blue-900/60 text-blue-300 border border-blue-700",
                               },
-                              `✂️ ${playerAnnouncement.defusing}`
+                              `✂️ ${playerAnn.defusing} defusing`
                             ),
                             h(
                               "span",
@@ -1641,22 +2754,57 @@
                                 className:
                                   "announcement-badge bg-red-900/60 text-red-300 border border-red-700",
                               },
-                              `💣 ${playerAnnouncement.bomb}`
+                              `💣 ${playerAnn.bomb} bomb`
                             )
                           )
                         : h(
                             "div",
-                            { className: "flex items-center" },
+                            null,
                             h(
                               "span",
                               {
                                 className:
                                   "announcement-badge bg-slate-700 text-slate-400",
                               },
-                              "⏳ Not announced"
+                              "⏳ Awaiting announcement..."
+                            )
+                          ),
+                      // Suspicion meter (if any suspicious activity detected)
+                      suspicionLevel > 0 &&
+                        h(
+                          "div",
+                          { className: "mt-1" },
+                          h(
+                            Tooltip,
+                            { text: "Claims don't match revealed cards!" },
+                            h(
+                              "div",
+                              { className: "flex items-center gap-2" },
+                              h(Eye, { className: "w-3 h-3 text-red-400" }),
+                              h(
+                                "div",
+                                { className: "suspicion-meter flex-1" },
+                                h("div", {
+                                  className: `suspicion-fill ${
+                                    suspicionLevel > 50
+                                      ? "suspicion-high"
+                                      : suspicionLevel > 25
+                                      ? "suspicion-medium"
+                                      : "suspicion-low"
+                                  }`,
+                                  style: { width: `${suspicionLevel}%` },
+                                })
+                              ),
+                              h(
+                                "span",
+                                { className: "text-xs text-red-400" },
+                                "Suspicious"
+                              )
                             )
                           )
+                        )
                     ),
+                    // Wire grid
                     h(
                       "div",
                       { className: "grid grid-cols-5 gap-2" },
@@ -1680,18 +2828,18 @@
                                 wireId: wire.id,
                               }),
                             disabled: !canCut,
-                            className: `aspect-square rounded-lg transition-all text-xl ${
+                            className: `aspect-square rounded-lg transition-all text-xl flex items-center justify-center ${
                               wire.revealed
                                 ? wire.type === "bomb"
-                                  ? "bg-red-500 text-white"
+                                  ? "bg-red-500 text-white shadow-lg shadow-red-500/30"
                                   : wire.type === "defusing"
-                                  ? "bg-blue-500 text-white"
+                                  ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30"
                                   : "bg-slate-600 text-slate-400"
                                 : isSelected
-                                ? "bg-yellow-500 scale-110 shadow-lg cursor-pointer"
+                                ? "wire-selected bg-amber-500 shadow-lg shadow-amber-500/50 cursor-pointer"
                                 : canCut
-                                ? "bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105"
-                                : "bg-slate-700 cursor-not-allowed opacity-50"
+                                ? "wire-selectable bg-slate-700 hover:bg-slate-600 cursor-pointer hover:scale-105 border-2 border-transparent hover:border-amber-500/50"
+                                : "bg-slate-700/50 cursor-not-allowed opacity-40"
                             }`,
                           },
                           wire.revealed
@@ -1700,6 +2848,8 @@
                               : wire.type === "defusing"
                               ? "✂️"
                               : "✓"
+                            : isSelected
+                            ? "✂️"
                             : "?"
                         );
                       })
@@ -1707,13 +2857,17 @@
                   );
                 })
             ),
+
+            // ==========================================
+            // CUT WIRE CONFIRMATION BUTTON
+            // ==========================================
             selectedWire &&
               isMyTurn &&
               h(
                 "div",
                 {
                   className:
-                    "fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50",
+                    "fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50",
                 },
                 h(
                   "button",
@@ -1721,71 +2875,142 @@
                     onClick: () =>
                       cutWire(selectedWire.playerId, selectedWire.wireId),
                     className:
-                      "bg-yellow-500 hover:bg-yellow-600 text-slate-900 px-8 py-4 rounded-full font-bold text-lg shadow-2xl transition-all hover:scale-105",
+                      "cut-confirm-btn bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-900 px-10 py-4 rounded-full font-bold text-lg shadow-2xl transition-all hover:scale-105 flex items-center gap-3",
                   },
-                  h(Scissors, { className: "inline w-6 h-6 mr-2" }),
-                  "Cut Wire"
+                  h(Scissors, { className: "w-6 h-6" }),
+                  "Cut This Wire",
+                  h("span", { className: "text-amber-900/60 text-sm" }, "from"),
+                  h(
+                    "span",
+                    { className: "font-bold" },
+                    gameState.players.find(
+                      (p) => p.id === selectedWire.playerId
+                    )?.name
+                  )
                 )
               ),
+
+            // ==========================================
+            // WIRE TYPES LEGEND WITH CONTEXTUAL INFO
+            // ==========================================
             h(
               "div",
               {
                 className:
-                  "mt-6 bg-slate-800 rounded-xl p-4 border border-slate-700 mb-20",
+                  "mt-6 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-slate-700 mb-20",
               },
               h(
-                "h4",
-                { className: "text-white font-bold mb-3 flex items-center" },
-                h(AlertCircle, { className: "w-5 h-5 mr-2" }),
-                "Wire Types"
+                "div",
+                { className: "flex items-center justify-between mb-3" },
+                h(
+                  "h4",
+                  { className: "text-white font-bold flex items-center gap-2" },
+                  h(Info, { className: "w-4 h-4 text-slate-400" }),
+                  "Wire Types"
+                ),
+                h(
+                  "div",
+                  { className: "text-xs text-slate-400" },
+                  `${gameState.config.defusing} defusing • 1 bomb • ${gameState.config.wires} safe`
+                )
               ),
               h(
                 "div",
                 { className: "grid grid-cols-3 gap-4 text-sm" },
                 h(
                   "div",
-                  { className: "flex items-center gap-2" },
+                  {
+                    className:
+                      "flex items-center gap-3 bg-slate-700/30 p-2 rounded-lg",
+                  },
                   h(
                     "div",
                     {
                       className:
-                        "w-8 h-8 bg-slate-600 rounded flex items-center justify-center text-slate-400",
+                        "w-10 h-10 bg-slate-600 rounded-lg flex items-center justify-center text-lg",
                     },
                     "✓"
                   ),
-                  h("span", { className: "text-slate-300" }, "Safe Wire")
+                  h(
+                    "div",
+                    null,
+                    h(
+                      "div",
+                      { className: "text-slate-300 font-semibold" },
+                      "Safe Wire"
+                    ),
+                    h(
+                      "div",
+                      { className: "text-slate-500 text-xs" },
+                      "No effect"
+                    )
+                  )
                 ),
                 h(
                   "div",
-                  { className: "flex items-center gap-2" },
+                  {
+                    className:
+                      "flex items-center gap-3 bg-blue-900/30 p-2 rounded-lg border border-blue-800/50",
+                  },
                   h(
                     "div",
                     {
                       className:
-                        "w-8 h-8 bg-blue-500 rounded flex items-center justify-center",
+                        "w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-lg",
                     },
                     "✂️"
                   ),
-                  h("span", { className: "text-slate-300" }, "Defusing Wire")
+                  h(
+                    "div",
+                    null,
+                    h(
+                      "div",
+                      { className: "text-blue-300 font-semibold" },
+                      "Defusing"
+                    ),
+                    h(
+                      "div",
+                      { className: "text-blue-400/70 text-xs" },
+                      "Find all to win!"
+                    )
+                  )
                 ),
                 h(
                   "div",
-                  { className: "flex items-center gap-2" },
+                  {
+                    className:
+                      "flex items-center gap-3 bg-red-900/30 p-2 rounded-lg border border-red-800/50",
+                  },
                   h(
                     "div",
                     {
                       className:
-                        "w-8 h-8 bg-red-500 rounded flex items-center justify-center",
+                        "w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center text-lg",
                     },
                     "💣"
                   ),
-                  h("span", { className: "text-slate-300" }, "Bomb")
+                  h(
+                    "div",
+                    null,
+                    h(
+                      "div",
+                      { className: "text-red-300 font-semibold" },
+                      "BOMB"
+                    ),
+                    h(
+                      "div",
+                      { className: "text-red-400/70 text-xs" },
+                      "Instant loss!"
+                    )
+                  )
                 )
               )
             )
           ),
 
+          // ==========================================
           // GAME OVER EFFECT OVERLAY
+          // ==========================================
           showGameOverEffect &&
             h(
               "div",
@@ -2297,14 +3522,14 @@
                 type,
                 revealed: false,
               })),
-          }));          
+          }));
 
           const getRandomIntegerInclusive = (max) => {
-            min = Math.ceil(0)
-            max = Math.floor(max)
+            min = Math.ceil(0);
+            max = Math.floor(max);
 
-            return Math.floor(Math.random() * (max - min + 1)) + min
-          }
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+          };
 
           const newState = {
             ...gameState,
