@@ -1718,9 +1718,6 @@
       }) {
         const [defusingAnnounce, setDefusingAnnounce] = useState(0);
         const [bombAnnounce, setBombAnnounce] = useState(0);
-        const [showAnnouncementPopup, setShowAnnouncementPopup] =
-          useState(false);
-        const [popupExiting, setPopupExiting] = useState(false);
 
         // Round transition state
         const [showRoundTransition, setShowRoundTransition] = useState(false);
@@ -1880,14 +1877,6 @@
           }
         };
 
-        const closeAnnouncementPopup = () => {
-          setPopupExiting(true);
-          setTimeout(() => {
-            setShowAnnouncementPopup(false);
-            setPopupExiting(false);
-          }, 200);
-        };
-
         // Team-based background with urgency overlay
         const teamBackground =
           myRole === "sherlock"
@@ -1919,279 +1908,6 @@
           {
             className: `min-h-screen bg-gradient-to-br ${teamBackground} p-4 ${urgencyClass}`,
           },
-
-          // ==========================================
-          // ENHANCED ANNOUNCEMENT POPUP MODAL
-          // ==========================================
-          showAnnouncementPopup &&
-            h(
-              "div",
-              null,
-              h("div", {
-                className: "announcement-backdrop",
-                onClick: closeAnnouncementPopup,
-              }),
-              h(
-                "div",
-                {
-                  className: `announcement-popup ${
-                    popupExiting ? "announcement-popup-exit" : ""
-                  } bg-slate-800 rounded-2xl p-6 border-2 border-yellow-500 shadow-2xl w-[90%] max-w-md`,
-                },
-                // Header
-                h(
-                  "div",
-                  { className: "text-center mb-5" },
-                  h("div", { className: "text-5xl mb-3" }, "📢"),
-                  h(
-                    "h2",
-                    { className: "text-2xl font-bold text-white mb-1" },
-                    "Make Your Announcement"
-                  ),
-                  h(
-                    "p",
-                    { className: "text-amber-400 text-sm" },
-                    myRole === "sherlock"
-                      ? "🔍 Help your team find defusing wires—but be careful what you reveal!"
-                      : "🎭 Mislead the detectives—claim whatever serves your plan!"
-                  )
-                ),
-
-                // Your actual cards (private info)
-                h(
-                  "div",
-                  {
-                    className:
-                      "bg-slate-900/70 rounded-xl p-4 mb-5 border border-slate-700",
-                  },
-                  h(
-                    "div",
-                    { className: "flex items-center gap-2 mb-3" },
-                    h(Eye, { className: "w-4 h-4 text-slate-400" }),
-                    h(
-                      "span",
-                      {
-                        className:
-                          "text-slate-400 text-xs uppercase tracking-wide font-semibold",
-                      },
-                      "Your Hidden Cards"
-                    )
-                  ),
-                  h(
-                    "div",
-                    { className: "flex justify-center gap-6" },
-                    h(
-                      "div",
-                      { className: "text-center" },
-                      h("div", { className: "text-3xl mb-1" }, "✂️"),
-                      h(
-                        "div",
-                        { className: "text-blue-400 font-bold text-lg" },
-                        myActualCards.defusing
-                      ),
-                      h(
-                        "div",
-                        { className: "text-slate-500 text-xs" },
-                        "Defusing"
-                      )
-                    ),
-                    h(
-                      "div",
-                      { className: "text-center" },
-                      h("div", { className: "text-3xl mb-1" }, "💣"),
-                      h(
-                        "div",
-                        { className: "text-red-400 font-bold text-lg" },
-                        myActualCards.bomb
-                      ),
-                      h("div", { className: "text-slate-500 text-xs" }, "Bomb")
-                    ),
-                    h(
-                      "div",
-                      { className: "text-center" },
-                      h("div", { className: "text-3xl mb-1" }, "✓"),
-                      h(
-                        "div",
-                        { className: "text-slate-400 font-bold text-lg" },
-                        myActualCards.safe
-                      ),
-                      h("div", { className: "text-slate-500 text-xs" }, "Safe")
-                    )
-                  )
-                ),
-
-                // Announcement inputs with structured prompts
-                h(
-                  "div",
-                  { className: "mb-5" },
-                  h(
-                    "div",
-                    { className: "text-center mb-3" },
-                    h(
-                      "span",
-                      { className: "text-white font-semibold" },
-                      "What will you claim?"
-                    ),
-                    h(
-                      "p",
-                      { className: "text-slate-400 text-xs mt-1" },
-                      "You can lie! Others will remember your claims."
-                    )
-                  ),
-                  h(
-                    "div",
-                    { className: "grid grid-cols-2 gap-4" },
-                    // Defusing claim
-                    h(
-                      "div",
-                      {
-                        className:
-                          "bg-blue-900/40 rounded-xl p-4 border border-blue-700",
-                      },
-                      h(
-                        "div",
-                        {
-                          className:
-                            "text-blue-300 text-sm mb-3 text-center font-bold flex items-center justify-center gap-2",
-                        },
-                        "✂️ Defusing Wires"
-                      ),
-                      h(
-                        "div",
-                        { className: "flex items-center justify-center gap-3" },
-                        h(
-                          "button",
-                          {
-                            onClick: () =>
-                              setDefusingAnnounce(
-                                Math.max(0, defusingAnnounce - 1)
-                              ),
-                            className:
-                              "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-full font-bold text-xl transition-all hover:scale-110",
-                          },
-                          "−"
-                        ),
-                        h(
-                          "div",
-                          {
-                            className:
-                              "text-3xl font-bold text-white w-12 text-center",
-                          },
-                          defusingAnnounce
-                        ),
-                        h(
-                          "button",
-                          {
-                            onClick: () =>
-                              setDefusingAnnounce(
-                                Math.min(5, defusingAnnounce + 1)
-                              ),
-                            className:
-                              "bg-blue-700 hover:bg-blue-600 text-white w-10 h-10 rounded-full font-bold text-xl transition-all hover:scale-110",
-                          },
-                          "+"
-                        )
-                      )
-                    ),
-                    // Bomb claim
-                    h(
-                      "div",
-                      {
-                        className:
-                          "bg-red-900/40 rounded-xl p-4 border border-red-700",
-                      },
-                      h(
-                        "div",
-                        {
-                          className:
-                            "text-red-300 text-sm mb-3 text-center font-bold flex items-center justify-center gap-2",
-                        },
-                        "💣 Bomb"
-                      ),
-                      h(
-                        "div",
-                        { className: "flex items-center justify-center gap-3" },
-                        h(
-                          "button",
-                          {
-                            onClick: () =>
-                              setBombAnnounce(Math.max(0, bombAnnounce - 1)),
-                            className:
-                              "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-full font-bold text-xl transition-all hover:scale-110",
-                          },
-                          "−"
-                        ),
-                        h(
-                          "div",
-                          {
-                            className:
-                              "text-3xl font-bold text-white w-12 text-center",
-                          },
-                          bombAnnounce
-                        ),
-                        h(
-                          "button",
-                          {
-                            onClick: () =>
-                              setBombAnnounce(Math.min(1, bombAnnounce + 1)),
-                            className:
-                              "bg-red-700 hover:bg-red-600 text-white w-10 h-10 rounded-full font-bold text-xl transition-all hover:scale-110",
-                          },
-                          "+"
-                        )
-                      )
-                    )
-                  )
-                ),
-
-                // Role-specific hint
-                h(
-                  "div",
-                  {
-                    className: `rounded-lg p-3 mb-4 text-sm ${
-                      myRole === "sherlock"
-                        ? "bg-blue-900/30 border border-blue-800 text-blue-300"
-                        : "bg-red-900/30 border border-red-800 text-red-300"
-                    }`,
-                  },
-                  h(
-                    "div",
-                    { className: "flex items-start gap-2" },
-                    h(Brain, { className: "w-4 h-4 mt-0.5 flex-shrink-0" }),
-                    h(
-                      "span",
-                      null,
-                      myRole === "sherlock"
-                        ? "💡 Tip: Honest claims help your team coordinate. But if Moriarty knows who has defusing wires, they'll avoid cutting them!"
-                        : "💡 Tip: Claim defusing wires to seem trustworthy, or claim the bomb to deter cuts. Sow confusion!"
-                    )
-                  )
-                ),
-
-                // Submit button
-                h(
-                  "button",
-                  {
-                    onClick: async () => {
-                      await announceCards();
-                      closeAnnouncementPopup();
-                    },
-                    className:
-                      "w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 py-4 rounded-xl font-bold text-lg transition-all hover:scale-[1.02] shadow-lg",
-                  },
-                  "🔒 Lock In My Claim"
-                ),
-                h(
-                  "button",
-                  {
-                    onClick: closeAnnouncementPopup,
-                    className:
-                      "w-full mt-2 bg-slate-700 hover:bg-slate-600 text-slate-300 py-2 rounded-lg text-sm transition-all",
-                  },
-                  "Cancel"
-                )
-              )
-            ),
 
           // ==========================================
           // ROUND TRANSITION OVERLAY
@@ -2476,16 +2192,15 @@
                           "Announcement Phase"
                         )
                       ),
-                      !hasAnnouncedThisRound &&
+                      hasAnnouncedThisRound &&
                         h(
-                          "button",
+                          "span",
                           {
-                            onClick: () => setShowAnnouncementPopup(true),
                             className:
-                              "bg-amber-600 hover:bg-amber-500 text-slate-900 px-5 py-2.5 rounded-lg font-bold text-sm transition-all hover:scale-105 pulse-attention flex items-center gap-2",
+                              "text-green-400 text-sm flex items-center gap-1",
                           },
-                          h(Megaphone, { className: "w-4 h-4" }),
-                          "Make Your Announcement"
+                          h(Check, { className: "w-4 h-4" }),
+                          "You've announced!"
                         )
                     ),
                     h(
@@ -2493,6 +2208,363 @@
                       { className: "text-amber-200/80 text-sm mb-4" },
                       "Each player must announce what cards they claim to have. Everyone can lie! Wire cutting begins after all announcements."
                     ),
+
+                    // INLINE ANNOUNCEMENT FORM (not announced yet)
+                    !hasAnnouncedThisRound &&
+                      h(
+                        "div",
+                        {
+                          className:
+                            "bg-slate-800/80 rounded-xl p-4 mb-4 border-2 border-amber-500 pulse-attention",
+                        },
+                        // Your actual cards (private reminder)
+                        h(
+                          "div",
+                          {
+                            className:
+                              "bg-slate-900/70 rounded-lg p-3 mb-4 border border-slate-700",
+                          },
+                          h(
+                            "div",
+                            { className: "flex items-center gap-2 mb-2" },
+                            h(Eye, { className: "w-4 h-4 text-slate-400" }),
+                            h(
+                              "span",
+                              {
+                                className:
+                                  "text-slate-400 text-xs uppercase tracking-wide font-semibold",
+                              },
+                              "Your Hidden Cards (only you see this)"
+                            )
+                          ),
+                          h(
+                            "div",
+                            { className: "flex justify-center gap-6" },
+                            h(
+                              "div",
+                              { className: "text-center" },
+                              h("div", { className: "text-2xl mb-1" }, "✂️"),
+                              h(
+                                "div",
+                                {
+                                  className: "text-blue-400 font-bold text-lg",
+                                },
+                                myActualCards.defusing
+                              ),
+                              h(
+                                "div",
+                                { className: "text-slate-500 text-xs" },
+                                "Defusing"
+                              )
+                            ),
+                            h(
+                              "div",
+                              { className: "text-center" },
+                              h("div", { className: "text-2xl mb-1" }, "💣"),
+                              h(
+                                "div",
+                                { className: "text-red-400 font-bold text-lg" },
+                                myActualCards.bomb
+                              ),
+                              h(
+                                "div",
+                                { className: "text-slate-500 text-xs" },
+                                "Bomb"
+                              )
+                            ),
+                            h(
+                              "div",
+                              { className: "text-center" },
+                              h("div", { className: "text-2xl mb-1" }, "✓"),
+                              h(
+                                "div",
+                                {
+                                  className: "text-slate-400 font-bold text-lg",
+                                },
+                                myActualCards.safe
+                              ),
+                              h(
+                                "div",
+                                { className: "text-slate-500 text-xs" },
+                                "Safe"
+                              )
+                            )
+                          )
+                        ),
+                        // Claim inputs
+                        h(
+                          "div",
+                          { className: "mb-4" },
+                          h(
+                            "div",
+                            { className: "text-center mb-2" },
+                            h(
+                              "span",
+                              { className: "text-white font-semibold" },
+                              "📢 What will you claim?"
+                            ),
+                            h(
+                              "p",
+                              { className: "text-slate-400 text-xs mt-1" },
+                              myRole === "sherlock"
+                                ? "Help your team—or hide info from Moriarty!"
+                                : "Mislead the detectives—claim whatever serves your plan!"
+                            )
+                          ),
+                          h(
+                            "div",
+                            {
+                              className: "flex justify-center gap-4 flex-wrap",
+                            },
+                            // Defusing claim
+                            h(
+                              "div",
+                              {
+                                className:
+                                  "bg-blue-900/40 rounded-lg p-3 border border-blue-700",
+                              },
+                              h(
+                                "div",
+                                {
+                                  className:
+                                    "text-blue-300 text-xs mb-2 text-center font-bold",
+                                },
+                                "✂️ Defusing"
+                              ),
+                              h(
+                                "div",
+                                {
+                                  className:
+                                    "flex items-center justify-center gap-2",
+                                },
+                                h(
+                                  "button",
+                                  {
+                                    onClick: () =>
+                                      setDefusingAnnounce(
+                                        Math.max(0, defusingAnnounce - 1)
+                                      ),
+                                    className:
+                                      "bg-blue-700 hover:bg-blue-600 text-white w-8 h-8 rounded-full font-bold text-lg transition-all hover:scale-110",
+                                  },
+                                  "−"
+                                ),
+                                h(
+                                  "div",
+                                  {
+                                    className:
+                                      "text-2xl font-bold text-white w-8 text-center",
+                                  },
+                                  defusingAnnounce
+                                ),
+                                h(
+                                  "button",
+                                  {
+                                    onClick: () =>
+                                      setDefusingAnnounce(
+                                        Math.min(5, defusingAnnounce + 1)
+                                      ),
+                                    className:
+                                      "bg-blue-700 hover:bg-blue-600 text-white w-8 h-8 rounded-full font-bold text-lg transition-all hover:scale-110",
+                                  },
+                                  "+"
+                                )
+                              )
+                            ),
+                            // Bomb claim
+                            h(
+                              "div",
+                              {
+                                className:
+                                  "bg-red-900/40 rounded-lg p-3 border border-red-700",
+                              },
+                              h(
+                                "div",
+                                {
+                                  className:
+                                    "text-red-300 text-xs mb-2 text-center font-bold",
+                                },
+                                "💣 Bomb"
+                              ),
+                              h(
+                                "div",
+                                {
+                                  className:
+                                    "flex items-center justify-center gap-2",
+                                },
+                                h(
+                                  "button",
+                                  {
+                                    onClick: () =>
+                                      setBombAnnounce(
+                                        Math.max(0, bombAnnounce - 1)
+                                      ),
+                                    className:
+                                      "bg-red-700 hover:bg-red-600 text-white w-8 h-8 rounded-full font-bold text-lg transition-all hover:scale-110",
+                                  },
+                                  "−"
+                                ),
+                                h(
+                                  "div",
+                                  {
+                                    className:
+                                      "text-2xl font-bold text-white w-8 text-center",
+                                  },
+                                  bombAnnounce
+                                ),
+                                h(
+                                  "button",
+                                  {
+                                    onClick: () =>
+                                      setBombAnnounce(
+                                        Math.min(1, bombAnnounce + 1)
+                                      ),
+                                    className:
+                                      "bg-red-700 hover:bg-red-600 text-white w-8 h-8 rounded-full font-bold text-lg transition-all hover:scale-110",
+                                  },
+                                  "+"
+                                )
+                              )
+                            )
+                          )
+                        ),
+                        // Submit button
+                        h(
+                          "button",
+                          {
+                            onClick: announceCards,
+                            className:
+                              "w-full bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-900 py-3 rounded-lg font-bold text-base transition-all hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2",
+                          },
+                          h(Megaphone, { className: "w-5 h-5" }),
+                          "🔒 Lock In My Claim"
+                        )
+                      ),
+
+                    // AFTER ANNOUNCED: Show your real cards reminder
+                    hasAnnouncedThisRound &&
+                      h(
+                        "div",
+                        {
+                          className:
+                            "bg-slate-800/60 rounded-xl p-4 mb-4 border border-slate-600",
+                        },
+                        h(
+                          "div",
+                          { className: "flex items-center gap-2 mb-3" },
+                          h(Eye, { className: "w-4 h-4 text-slate-400" }),
+                          h(
+                            "span",
+                            {
+                              className:
+                                "text-slate-400 text-xs uppercase tracking-wide font-semibold",
+                            },
+                            "Your Real Cards (reminder)"
+                          )
+                        ),
+                        h(
+                          "div",
+                          { className: "flex justify-center gap-6" },
+                          h(
+                            "div",
+                            { className: "text-center" },
+                            h("div", { className: "text-2xl mb-1" }, "✂️"),
+                            h(
+                              "div",
+                              { className: "text-blue-400 font-bold text-lg" },
+                              myActualCards.defusing
+                            ),
+                            h(
+                              "div",
+                              { className: "text-slate-500 text-xs" },
+                              "Defusing"
+                            )
+                          ),
+                          h(
+                            "div",
+                            { className: "text-center" },
+                            h("div", { className: "text-2xl mb-1" }, "💣"),
+                            h(
+                              "div",
+                              { className: "text-red-400 font-bold text-lg" },
+                              myActualCards.bomb
+                            ),
+                            h(
+                              "div",
+                              { className: "text-slate-500 text-xs" },
+                              "Bomb"
+                            )
+                          ),
+                          h(
+                            "div",
+                            { className: "text-center" },
+                            h("div", { className: "text-2xl mb-1" }, "✓"),
+                            h(
+                              "div",
+                              { className: "text-slate-400 font-bold text-lg" },
+                              myActualCards.safe
+                            ),
+                            h(
+                              "div",
+                              { className: "text-slate-500 text-xs" },
+                              "Safe"
+                            )
+                          )
+                        ),
+                        // Show what you claimed vs reality
+                        myAnnouncement &&
+                          h(
+                            "div",
+                            {
+                              className: "mt-3 pt-3 border-t border-slate-700",
+                            },
+                            h(
+                              "div",
+                              {
+                                className:
+                                  "text-xs text-slate-400 text-center mb-2",
+                              },
+                              "You claimed:"
+                            ),
+                            h(
+                              "div",
+                              { className: "flex justify-center gap-4" },
+                              h(
+                                "span",
+                                {
+                                  className: `text-sm px-2 py-1 rounded ${
+                                    myAnnouncement.defusing ===
+                                    myActualCards.defusing
+                                      ? "bg-green-800/50 text-green-300"
+                                      : "bg-amber-800/50 text-amber-300"
+                                  }`,
+                                },
+                                `✂️ ${myAnnouncement.defusing} ${
+                                  myAnnouncement.defusing ===
+                                  myActualCards.defusing
+                                    ? "✓"
+                                    : "(lied)"
+                                }`
+                              ),
+                              h(
+                                "span",
+                                {
+                                  className: `text-sm px-2 py-1 rounded ${
+                                    myAnnouncement.bomb === myActualCards.bomb
+                                      ? "bg-green-800/50 text-green-300"
+                                      : "bg-amber-800/50 text-amber-300"
+                                  }`,
+                                },
+                                `💣 ${myAnnouncement.bomb} ${
+                                  myAnnouncement.bomb === myActualCards.bomb
+                                    ? "✓"
+                                    : "(lied)"
+                                }`
+                              )
+                            )
+                          )
+                      ),
+
                     // Announcement status grid
                     h(
                       "div",
@@ -2586,6 +2658,120 @@
                       isMyTurn
                         ? "🎯 It's your turn! Select a wire from another player to cut."
                         : `Waiting for ${currentPlayerObj.name} to cut a wire...`
+                    ),
+                    // Your real cards reminder during cutting phase
+                    h(
+                      "div",
+                      {
+                        className:
+                          "mt-3 bg-slate-800/60 rounded-lg p-3 border border-slate-700",
+                      },
+                      h(
+                        "div",
+                        { className: "flex items-center gap-2 mb-2" },
+                        h(Eye, { className: "w-4 h-4 text-slate-400" }),
+                        h(
+                          "span",
+                          {
+                            className:
+                              "text-slate-400 text-xs uppercase tracking-wide font-semibold",
+                          },
+                          "Your Real Cards"
+                        )
+                      ),
+                      h(
+                        "div",
+                        { className: "flex justify-center gap-6" },
+                        h(
+                          "div",
+                          { className: "text-center" },
+                          h("div", { className: "text-xl mb-0.5" }, "✂️"),
+                          h(
+                            "div",
+                            { className: "text-blue-400 font-bold" },
+                            myActualCards.defusing
+                          ),
+                          h(
+                            "div",
+                            { className: "text-slate-500 text-xs" },
+                            "Defusing"
+                          )
+                        ),
+                        h(
+                          "div",
+                          { className: "text-center" },
+                          h("div", { className: "text-xl mb-0.5" }, "💣"),
+                          h(
+                            "div",
+                            { className: "text-red-400 font-bold" },
+                            myActualCards.bomb
+                          ),
+                          h(
+                            "div",
+                            { className: "text-slate-500 text-xs" },
+                            "Bomb"
+                          )
+                        ),
+                        h(
+                          "div",
+                          { className: "text-center" },
+                          h("div", { className: "text-xl mb-0.5" }, "✓"),
+                          h(
+                            "div",
+                            { className: "text-slate-400 font-bold" },
+                            myActualCards.safe
+                          ),
+                          h(
+                            "div",
+                            { className: "text-slate-500 text-xs" },
+                            "Safe"
+                          )
+                        )
+                      ),
+                      // What you claimed
+                      myAnnouncement &&
+                        myAnnouncement.round === gameState.round &&
+                        h(
+                          "div",
+                          {
+                            className:
+                              "mt-2 pt-2 border-t border-slate-700 flex justify-center gap-3 text-xs",
+                          },
+                          h(
+                            "span",
+                            { className: "text-slate-400" },
+                            "You claimed:"
+                          ),
+                          h(
+                            "span",
+                            {
+                              className:
+                                myAnnouncement.defusing ===
+                                myActualCards.defusing
+                                  ? "text-green-400"
+                                  : "text-amber-400",
+                            },
+                            `✂️ ${myAnnouncement.defusing}${
+                              myAnnouncement.defusing !== myActualCards.defusing
+                                ? " (lied)"
+                                : ""
+                            }`
+                          ),
+                          h(
+                            "span",
+                            {
+                              className:
+                                myAnnouncement.bomb === myActualCards.bomb
+                                  ? "text-green-400"
+                                  : "text-amber-400",
+                            },
+                            `💣 ${myAnnouncement.bomb}${
+                              myAnnouncement.bomb !== myActualCards.bomb
+                                ? " (lied)"
+                                : ""
+                            }`
+                          )
+                        )
                     ),
                     // Summary of claims
                     allPlayersAnnounced &&
