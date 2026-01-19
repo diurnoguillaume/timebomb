@@ -712,6 +712,147 @@
           font-size: 0.55rem;
           padding: 1px 6px;
         }
+
+        /* Mobile-first game layout */
+        .mobile-header {
+          padding: 0.75rem !important;
+        }
+        .mobile-header .phase-indicator {
+          padding: 0.5rem 0.75rem !important;
+          font-size: 0.7rem !important;
+        }
+        .mobile-stats {
+          gap: 0.5rem !important;
+        }
+        .mobile-stats > div {
+          padding: 0.5rem !important;
+          min-width: 60px;
+        }
+        .mobile-stats .text-xs {
+          font-size: 0.6rem !important;
+        }
+        .mobile-stats .text-xl {
+          font-size: 1rem !important;
+        }
+        .mobile-role-badge {
+          padding: 0.375rem 0.625rem !important;
+          font-size: 0.75rem !important;
+        }
+        .mobile-role-badge svg {
+          width: 14px !important;
+          height: 14px !important;
+        }
+
+        /* Compact player cards for mobile */
+        .mobile-player-grid {
+          gap: 0.5rem !important;
+        }
+        .mobile-player-card {
+          padding: 0.625rem !important;
+        }
+        .mobile-player-card .player-name {
+          font-size: 0.8rem !important;
+        }
+        .mobile-player-card .wire-count {
+          font-size: 0.65rem !important;
+        }
+        .mobile-wire {
+          width: 2rem !important;
+          height: 2rem !important;
+          font-size: 0.85rem !important;
+        }
+
+        /* Compact announcement form */
+        .mobile-announcement {
+          padding: 0.75rem !important;
+        }
+        .mobile-announcement .claim-btn {
+          width: 1.75rem !important;
+          height: 1.75rem !important;
+          font-size: 0.9rem !important;
+        }
+        .mobile-announcement .claim-value {
+          font-size: 1.25rem !important;
+          width: 1.5rem !important;
+        }
+        .mobile-cards-display {
+          gap: 1rem !important;
+        }
+        .mobile-cards-display .card-icon {
+          font-size: 1.25rem !important;
+        }
+        .mobile-cards-display .card-count {
+          font-size: 1rem !important;
+        }
+
+        /* Urgency badge compact */
+        .mobile-urgency {
+          padding: 0.25rem 0.5rem !important;
+          font-size: 0.65rem !important;
+        }
+        .mobile-urgency svg {
+          width: 12px !important;
+          height: 12px !important;
+        }
+
+        /* Wire legend compact */
+        .mobile-legend {
+          padding: 0.5rem !important;
+          margin-top: 0.5rem !important;
+        }
+        .mobile-legend .legend-title {
+          font-size: 0.7rem !important;
+        }
+        .mobile-legend .legend-items {
+          gap: 0.375rem !important;
+        }
+        .mobile-legend .legend-item {
+          padding: 0.25rem 0.5rem !important;
+          font-size: 0.65rem !important;
+        }
+
+        /* Cut confirmation button */
+        .mobile-cut-btn {
+          bottom: 0.5rem !important;
+          padding: 0.625rem 1.25rem !important;
+          font-size: 0.85rem !important;
+        }
+
+        /* Phase content compact */
+        .mobile-phase-content {
+          padding: 0.75rem !important;
+          margin-top: 0.5rem !important;
+        }
+        .mobile-phase-content p {
+          font-size: 0.75rem !important;
+        }
+
+        /* Announcement status grid compact */
+        .mobile-ann-grid {
+          gap: 0.375rem !important;
+        }
+        .mobile-ann-item {
+          padding: 0.375rem !important;
+        }
+        .mobile-ann-item .name {
+          font-size: 0.7rem !important;
+        }
+        .mobile-ann-item .claims {
+          font-size: 0.6rem !important;
+          gap: 0.25rem !important;
+        }
+      }
+
+      /* Extra small devices */
+      @media (max-width: 380px) {
+        .mobile-wire {
+          width: 1.75rem !important;
+          height: 1.75rem !important;
+          font-size: 0.75rem !important;
+        }
+        .mobile-player-card {
+          padding: 0.5rem !important;
+        }
       }
     </style>
   </head>
@@ -1906,7 +2047,7 @@
         return h(
           "div",
           {
-            className: `min-h-screen bg-gradient-to-br ${teamBackground} p-4 ${urgencyClass}`,
+            className: `min-h-screen bg-gradient-to-br ${teamBackground} p-2 sm:p-4 ${urgencyClass}`,
           },
 
           // ==========================================
@@ -1998,7 +2139,7 @@
             h(
               "div",
               {
-                className: `bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 mb-4 border border-slate-700 ${
+                className: `bg-slate-800/90 backdrop-blur-sm rounded-xl p-3 sm:p-4 mb-2 sm:mb-4 border border-slate-700 mobile-header ${
                   currentPhase === "announcement"
                     ? "phase-announcement"
                     : "phase-cutting"
@@ -2009,7 +2150,7 @@
                 "div",
                 {
                   className:
-                    "flex flex-wrap gap-3 justify-between items-center mb-4",
+                    "flex flex-wrap gap-2 sm:gap-3 justify-between items-center mb-2 sm:mb-4",
                 },
                 h(PhaseIndicator, {
                   phase: currentPhase,
@@ -2023,7 +2164,7 @@
                 "div",
                 {
                   className:
-                    "flex flex-wrap gap-4 justify-between items-center",
+                    "flex flex-wrap gap-2 sm:gap-4 justify-between items-center mobile-stats",
                 },
                 h(
                   "div",
@@ -2131,41 +2272,6 @@
                 )
               ),
 
-              // Role mission reminder with contextual help
-              h(
-                "div",
-                {
-                  className: `mt-4 p-3 rounded-lg role-card ${roleClass}`,
-                },
-                h(
-                  "div",
-                  { className: "flex items-start gap-3" },
-                  h(
-                    "div",
-                    { className: "text-2xl" },
-                    myRole === "sherlock" ? "🔍" : "🎭"
-                  ),
-                  h(
-                    "div",
-                    null,
-                    h(
-                      "p",
-                      { className: "text-white text-sm font-semibold" },
-                      myRole === "sherlock"
-                        ? "Your Mission: Defuse the Bomb"
-                        : "Your Mission: Sabotage"
-                    ),
-                    h(
-                      "p",
-                      { className: "text-slate-300 text-xs mt-1" },
-                      myRole === "sherlock"
-                        ? `Find all ${gameState.config.defusing} defusing wires before round 4 ends. Watch for lies in announcements!`
-                        : `Make someone cut the bomb, or survive until round 4 ends. Mislead and misdirect!`
-                    )
-                  )
-                )
-              ),
-
               // ==========================================
               // PHASE-SPECIFIC CONTENT
               // ==========================================
@@ -2174,21 +2280,26 @@
                     "div",
                     {
                       className:
-                        "mt-4 bg-amber-900/40 border border-amber-600 rounded-xl p-4",
+                        "mt-2 sm:mt-4 bg-amber-900/40 border border-amber-600 rounded-xl p-3 sm:p-4 mobile-phase-content",
                     },
                     h(
                       "div",
                       {
                         className:
-                          "flex flex-wrap items-center justify-between gap-3 mb-4",
+                          "flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-2 sm:mb-4",
                       },
                       h(
                         "div",
                         { className: "flex items-center gap-2" },
-                        h(Megaphone, { className: "w-5 h-5 text-amber-400" }),
+                        h(Megaphone, {
+                          className: "w-4 h-4 sm:w-5 sm:h-5 text-amber-400",
+                        }),
                         h(
                           "span",
-                          { className: "text-amber-300 font-bold" },
+                          {
+                            className:
+                              "text-amber-300 font-bold text-sm sm:text-base",
+                          },
                           "Announcement Phase"
                         )
                       ),
@@ -2197,16 +2308,19 @@
                           "span",
                           {
                             className:
-                              "text-green-400 text-sm flex items-center gap-1",
+                              "text-green-400 text-xs sm:text-sm flex items-center gap-1",
                           },
-                          h(Check, { className: "w-4 h-4" }),
-                          "You've announced!"
+                          h(Check, { className: "w-3 h-3 sm:w-4 sm:h-4" }),
+                          "Done!"
                         )
                     ),
                     h(
                       "p",
-                      { className: "text-amber-200/80 text-sm mb-4" },
-                      "Each player must announce what cards they claim to have. Everyone can lie! Wire cutting begins after all announcements."
+                      {
+                        className:
+                          "text-amber-200/80 text-xs sm:text-sm mb-2 sm:mb-4",
+                      },
+                      "Each player must announce what cards they claim to have. You can lie!"
                     ),
 
                     // INLINE ANNOUNCEMENT FORM (not announced yet)
@@ -2215,31 +2329,36 @@
                         "div",
                         {
                           className:
-                            "bg-slate-800/80 rounded-xl p-4 mb-4 border-2 border-amber-500 pulse-attention",
+                            "bg-slate-800/80 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 border-2 border-amber-500 pulse-attention mobile-announcement",
                         },
                         // Your actual cards (private reminder)
                         h(
                           "div",
                           {
                             className:
-                              "bg-slate-900/70 rounded-lg p-3 mb-4 border border-slate-700",
+                              "bg-slate-900/70 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4 border border-slate-700",
                           },
                           h(
                             "div",
                             { className: "flex items-center gap-2 mb-2" },
-                            h(Eye, { className: "w-4 h-4 text-slate-400" }),
+                            h(Eye, {
+                              className: "w-3 h-3 sm:w-4 sm:h-4 text-slate-400",
+                            }),
                             h(
                               "span",
                               {
                                 className:
                                   "text-slate-400 text-xs uppercase tracking-wide font-semibold",
                               },
-                              "Your Hidden Cards (only you see this)"
+                              "Your Cards"
                             )
                           ),
                           h(
                             "div",
-                            { className: "flex justify-center gap-6" },
+                            {
+                              className:
+                                "flex justify-center gap-4 sm:gap-6 mobile-cards-display",
+                            },
                             h(
                               "div",
                               { className: "text-center" },
@@ -2853,7 +2972,7 @@
               "div",
               {
                 className:
-                  "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4",
+                  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 mt-2 sm:mt-4 mobile-player-grid",
               },
               gameState.players
                 .filter((player) => player.wires && Array.isArray(player.wires))
@@ -2876,7 +2995,7 @@
                     "div",
                     {
                       key: player.id,
-                      className: `bg-slate-800/90 backdrop-blur-sm rounded-xl p-4 border-2 transition-all relative ${
+                      className: `bg-slate-800/90 backdrop-blur-sm rounded-xl p-3 sm:p-4 border-2 transition-all relative mobile-player-card ${
                         isCurrentPlayer
                           ? "player-spotlight border-amber-400"
                           : "border-slate-700 hover:border-slate-600"
@@ -2885,7 +3004,7 @@
                     // Player header
                     h(
                       "div",
-                      { className: "flex flex-col gap-2 mb-3" },
+                      { className: "flex flex-col gap-2 mb-2 sm:mb-3" },
                       h(
                         "div",
                         { className: "flex justify-between items-start" },
@@ -2993,7 +3112,7 @@
                     // Wire grid
                     h(
                       "div",
-                      { className: "grid grid-cols-5 gap-2" },
+                      { className: "grid grid-cols-5 gap-1 sm:gap-2" },
                       player.wires.map((wire) => {
                         const canCut =
                           isMyTurn &&
@@ -3014,7 +3133,7 @@
                                 wireId: wire.id,
                               }),
                             disabled: !canCut,
-                            className: `aspect-square rounded-lg transition-all text-xl flex items-center justify-center ${
+                            className: `aspect-square rounded-lg transition-all text-base sm:text-xl flex items-center justify-center mobile-wire ${
                               wire.revealed
                                 ? wire.type === "bomb"
                                   ? "bg-red-500 text-white shadow-lg shadow-red-500/30"
@@ -3053,7 +3172,7 @@
                 "div",
                 {
                   className:
-                    "fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50",
+                    "fixed bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-[90%] sm:w-auto",
                 },
                 h(
                   "button",
@@ -3061,11 +3180,18 @@
                     onClick: () =>
                       cutWire(selectedWire.playerId, selectedWire.wireId),
                     className:
-                      "cut-confirm-btn bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-900 px-10 py-4 rounded-full font-bold text-lg shadow-2xl transition-all hover:scale-105 flex items-center gap-3",
+                      "cut-confirm-btn mobile-cut-btn w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-900 px-6 sm:px-10 py-3 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-2xl transition-all hover:scale-105 flex items-center justify-center gap-2 sm:gap-3",
                   },
-                  h(Scissors, { className: "w-6 h-6" }),
-                  "Cut This Wire",
-                  h("span", { className: "text-amber-900/60 text-sm" }, "from"),
+                  h(Scissors, { className: "w-5 h-5 sm:w-6 sm:h-6" }),
+                  "Cut Wire",
+                  h(
+                    "span",
+                    {
+                      className:
+                        "text-amber-900/60 text-xs sm:text-sm hidden sm:inline",
+                    },
+                    "from"
+                  ),
                   h(
                     "span",
                     { className: "font-bold" },
@@ -3083,15 +3209,20 @@
               "div",
               {
                 className:
-                  "mt-6 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-slate-700 mb-20",
+                  "mt-3 sm:mt-6 bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-slate-700 mb-16 sm:mb-20 mobile-legend",
               },
               h(
                 "div",
-                { className: "flex items-center justify-between mb-3" },
+                { className: "flex items-center justify-between mb-2 sm:mb-3" },
                 h(
                   "h4",
-                  { className: "text-white font-bold flex items-center gap-2" },
-                  h(Info, { className: "w-4 h-4 text-slate-400" }),
+                  {
+                    className:
+                      "text-white font-bold flex items-center gap-2 text-sm sm:text-base legend-title",
+                  },
+                  h(Info, {
+                    className: "w-3 h-3 sm:w-4 sm:h-4 text-slate-400",
+                  }),
                   "Wire Types"
                 ),
                 h(
@@ -3519,10 +3650,90 @@
         const [loading, setLoading] = useState(false);
         const [gameLog, setGameLog] = useState([]);
         const [showLog, setShowLog] = useState(false);
+        const [isReconnecting, setIsReconnecting] = useState(false);
 
         // Game over effect state (managed here for cutWire access)
         const [showGameOverEffect, setShowGameOverEffect] = useState(false);
         const [gameOverType, setGameOverType] = useState(null); // 'bomb' or 'defused'
+
+        // Save session data whenever key state changes
+        useEffect(() => {
+          if (roomCode && playerId !== null && playerName) {
+            const sessionData = {
+              roomCode,
+              playerId,
+              playerName,
+              myRole,
+              timestamp: Date.now(),
+            };
+            sessionStorage.setItem(
+              "timebomb_session",
+              JSON.stringify(sessionData)
+            );
+          }
+        }, [roomCode, playerId, playerName, myRole]);
+
+        // Restore session on mount
+        useEffect(() => {
+          const savedSession = sessionStorage.getItem("timebomb_session");
+          if (savedSession && !roomCode) {
+            try {
+              const session = JSON.parse(savedSession);
+              // Only restore if session is less than 2 hours old
+              if (Date.now() - session.timestamp < 2 * 60 * 60 * 1000) {
+                setIsReconnecting(true);
+                // Check if room still exists
+                database
+                  .ref(`rooms/${session.roomCode}`)
+                  .once("value")
+                  .then((snapshot) => {
+                    const state = snapshot.val();
+                    if (state && state.players) {
+                      // Check if player is still in the room
+                      const playerExists = state.players.some(
+                        (p) => p.id === session.playerId
+                      );
+                      if (playerExists) {
+                        setRoomCode(session.roomCode);
+                        setPlayerId(session.playerId);
+                        setPlayerName(session.playerName);
+                        if (session.myRole) setMyRole(session.myRole);
+                        setGameState(state);
+                        // Set appropriate screen based on game status
+                        if (state.status === "lobby") setScreen("lobby");
+                        else if (state.status === "playing") {
+                          setScreen("game");
+                          // Get role from game state if not in session
+                          if (!session.myRole) {
+                            const player = state.players.find(
+                              (p) => p.id === session.playerId
+                            );
+                            if (player && player.role) setMyRole(player.role);
+                          }
+                        } else if (state.status === "ended") setScreen("end");
+                      } else {
+                        // Player no longer in room, clear session
+                        sessionStorage.removeItem("timebomb_session");
+                      }
+                    } else {
+                      // Room no longer exists, clear session
+                      sessionStorage.removeItem("timebomb_session");
+                    }
+                    setIsReconnecting(false);
+                  })
+                  .catch(() => {
+                    sessionStorage.removeItem("timebomb_session");
+                    setIsReconnecting(false);
+                  });
+              } else {
+                // Session too old, clear it
+                sessionStorage.removeItem("timebomb_session");
+              }
+            } catch (e) {
+              sessionStorage.removeItem("timebomb_session");
+            }
+          }
+        }, []);
 
         useEffect(() => {
           if (!roomCode) return;
@@ -3547,10 +3758,16 @@
                 return;
               }
 
-              if (state.status === "lobby" && screen !== "lobby")
+              if (state.status === "lobby" && screen !== "lobby") {
                 setScreen("lobby");
-              else if (state.status === "playing" && screen !== "game") {
+                // Reset game over effects when returning to lobby
+                setShowGameOverEffect(false);
+                setGameOverType(null);
+              } else if (state.status === "playing" && screen !== "game") {
                 setScreen("game");
+                // Reset game over effects when game starts
+                setShowGameOverEffect(false);
+                setGameOverType(null);
                 if (!myRole && playerId !== null) {
                   const player = state.players.find((p) => p.id === playerId);
                   if (player) setMyRole(player.role);
@@ -3903,6 +4120,9 @@
             console.error("Leave room error:", err);
           }
 
+          // Clear session storage
+          sessionStorage.removeItem("timebomb_session");
+
           // Reset local state
           setScreen("home");
           setRoomCode("");
@@ -3956,6 +4176,32 @@
             setError("Failed to restart game. Please try again.");
           }
         };
+
+        // Show reconnecting screen
+        if (isReconnecting) {
+          return h(
+            "div",
+            {
+              className:
+                "min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4",
+            },
+            h(
+              "div",
+              { className: "text-center" },
+              h("div", { className: "text-5xl mb-4 animate-pulse" }, "🔄"),
+              h(
+                "h2",
+                { className: "text-2xl font-bold text-white mb-2" },
+                "Reconnecting..."
+              ),
+              h(
+                "p",
+                { className: "text-slate-400" },
+                "Getting you back into the game"
+              )
+            )
+          );
+        }
 
         if (screen === "home") {
           return h(HomeScreen, {
