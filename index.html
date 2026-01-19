@@ -3524,10 +3524,9 @@
               })),
           }));
 
-          const getRandomIntegerInclusive = (max) => {
-            min = Math.ceil(0);
+          const getRandomIntegerInclusive = (min, max) => {
+            min = Math.ceil(min);
             max = Math.floor(max);
-
             return Math.floor(Math.random() * (max - min + 1)) + min;
           };
 
@@ -3535,7 +3534,10 @@
             ...gameState,
             status: "playing",
             players: playersWithRoles,
-            currentPlayer: getRandomIntegerInclusive(gameState.players.length),
+            currentPlayer: getRandomIntegerInclusive(
+              0,
+              gameState.players.length - 1
+            ),
             round: 1,
             revealedInRound: 0,
             defusingFound: 0,
