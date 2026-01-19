@@ -2369,11 +2369,6 @@
                                   className: "text-blue-400 font-bold text-lg",
                                 },
                                 myActualCards.defusing
-                              ),
-                              h(
-                                "div",
-                                { className: "text-slate-500 text-xs" },
-                                "Defusing"
                               )
                             ),
                             h(
@@ -2384,11 +2379,6 @@
                                 "div",
                                 { className: "text-red-400 font-bold text-lg" },
                                 myActualCards.bomb
-                              ),
-                              h(
-                                "div",
-                                { className: "text-slate-500 text-xs" },
-                                "Bomb"
                               )
                             ),
                             h(
@@ -2401,11 +2391,6 @@
                                   className: "text-slate-400 font-bold text-lg",
                                 },
                                 myActualCards.safe
-                              ),
-                              h(
-                                "div",
-                                { className: "text-slate-500 text-xs" },
-                                "Safe"
                               )
                             )
                           )
@@ -2448,7 +2433,7 @@
                                   className:
                                     "text-blue-300 text-xs mb-2 text-center font-bold",
                                 },
-                                "✂️ Defusing"
+                                "✂️"
                               ),
                               h(
                                 "div",
@@ -2503,7 +2488,7 @@
                                   className:
                                     "text-red-300 text-xs mb-2 text-center font-bold",
                                 },
-                                "💣 Bomb"
+                                "💣"
                               ),
                               h(
                                 "div",
@@ -2592,11 +2577,6 @@
                               "div",
                               { className: "text-blue-400 font-bold text-lg" },
                               myActualCards.defusing
-                            ),
-                            h(
-                              "div",
-                              { className: "text-slate-500 text-xs" },
-                              "Defusing"
                             )
                           ),
                           h(
@@ -2607,11 +2587,6 @@
                               "div",
                               { className: "text-red-400 font-bold text-lg" },
                               myActualCards.bomb
-                            ),
-                            h(
-                              "div",
-                              { className: "text-slate-500 text-xs" },
-                              "Bomb"
                             )
                           ),
                           h(
@@ -2809,11 +2784,6 @@
                             "div",
                             { className: "text-blue-400 font-bold" },
                             myActualCards.defusing
-                          ),
-                          h(
-                            "div",
-                            { className: "text-slate-500 text-xs" },
-                            "Defusing"
                           )
                         ),
                         h(
@@ -2824,11 +2794,6 @@
                             "div",
                             { className: "text-red-400 font-bold" },
                             myActualCards.bomb
-                          ),
-                          h(
-                            "div",
-                            { className: "text-slate-500 text-xs" },
-                            "Bomb"
                           )
                         ),
                         h(
@@ -2909,13 +2874,13 @@
                           h(
                             "span",
                             { className: "text-blue-400 font-semibold" },
-                            `✂️ ${totalClaimed.defusing} defusing`
+                            `✂️ ${totalClaimed.defusing}`
                           ),
                           h("span", { className: "text-slate-500" }, "•"),
                           h(
                             "span",
                             { className: "text-red-400 font-semibold" },
-                            `💣 ${totalClaimed.bomb} bomb`
+                            `💣 ${totalClaimed.bomb}`
                           )
                         ),
                         totalClaimed.defusing !==
@@ -3051,7 +3016,7 @@
                                 className:
                                   "announcement-badge bg-blue-900/60 text-blue-300 border border-blue-700",
                               },
-                              `✂️ ${playerAnn.defusing} defusing`
+                              `✂️ ${playerAnn.defusing}`
                             ),
                             h(
                               "span",
@@ -3059,7 +3024,7 @@
                                 className:
                                   "announcement-badge bg-red-900/60 text-red-300 border border-red-700",
                               },
-                              `💣 ${playerAnn.bomb} bomb`
+                              `💣 ${playerAnn.bomb}`
                             )
                           )
                         : h(
@@ -3255,11 +3220,6 @@
                       "div",
                       { className: "text-slate-300 font-semibold" },
                       "Safe Wire"
-                    ),
-                    h(
-                      "div",
-                      { className: "text-slate-500 text-xs" },
-                      "No effect"
                     )
                   )
                 ),
@@ -3284,11 +3244,6 @@
                       "div",
                       { className: "text-blue-300 font-semibold" },
                       "Defusing"
-                    ),
-                    h(
-                      "div",
-                      { className: "text-blue-400/70 text-xs" },
-                      "Find all to win!"
                     )
                   )
                 ),
@@ -3313,11 +3268,6 @@
                       "div",
                       { className: "text-red-300 font-semibold" },
                       "BOMB"
-                    ),
-                    h(
-                      "div",
-                      { className: "text-red-400/70 text-xs" },
-                      "Instant loss!"
                     )
                   )
                 )
